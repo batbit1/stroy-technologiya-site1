@@ -101,15 +101,19 @@ export function PortfolioSection() {
   }, []);
 
   const isMobileSwipe = useMediaQuery("(max-width: 767px)");
+  const isPortfolioDragViewportDesktop = useMediaQuery("(min-width: 1024px)");
   const swipeEnabled = isMobileSwipe && !reduceMotion && total > 1;
+  /** Framer horizontal drag только ≥lg; на mobile/tablet конфликтует со страничным скроллом. */
+  const allowPortfolioDrag =
+    swipeEnabled && isPortfolioDragViewportDesktop;
 
   const onMobileSwipeEnd = useCallback(
     (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-      if (!swipeEnabled) return;
+      if (!allowPortfolioDrag) return;
       if (info.offset.x < -60) goNext();
       if (info.offset.x > 60) goPrev();
     },
-    [swipeEnabled, goNext, goPrev],
+    [allowPortfolioDrag, goNext, goPrev],
   );
 
   if (total === 0 || !project) {
@@ -173,10 +177,10 @@ export function PortfolioSection() {
           {/* Desktop: row | Mobile: column image first */}
           <motion.div
             className="flex min-h-0 w-full flex-1 flex-col gap-8 lg:flex-row lg:items-stretch lg:gap-10 xl:gap-14"
-            drag={swipeEnabled ? "x" : false}
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.12}
-            onDragEnd={swipeEnabled ? onMobileSwipeEnd : undefined}
+            drag={allowPortfolioDrag ? "x" : false}
+            dragConstraints={allowPortfolioDrag ? { left: 0, right: 0 } : undefined}
+            dragElastic={allowPortfolioDrag ? 0.12 : 0}
+            onDragEnd={allowPortfolioDrag ? onMobileSwipeEnd : undefined}
           >
             {/* Image — top on mobile, right on desktop */}
             <div className="order-1 flex min-h-0 w-full shrink-0 flex-col lg:order-2 lg:w-[min(54%,520px)] lg:flex-1 xl:w-[min(56%,580px)]">
