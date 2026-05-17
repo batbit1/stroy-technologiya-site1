@@ -344,9 +344,9 @@ function HeroMobile({
         initial={enterSub}
         animate={aliveSub}
         transition={{
-          duration: soft ? 0.12 : CINEMATIC_TEXT_ENTER_S,
+          duration: scrollFlowLayout ? 0.01 : soft ? 0.12 : CINEMATIC_TEXT_ENTER_S,
           ease: EASE_PREMIUM,
-          delay: soft ? 0 : 0.08,
+          delay: scrollFlowLayout || soft ? 0 : 0.08,
         }}
         className="hero-body-lede font-sans"
       >
@@ -357,9 +357,9 @@ function HeroMobile({
         initial={enterSub}
         animate={aliveSub}
         transition={{
-          duration: soft ? 0.12 : CINEMATIC_TEXT_ENTER_S,
+          duration: scrollFlowLayout ? 0.01 : soft ? 0.12 : CINEMATIC_TEXT_ENTER_S,
           ease: EASE_PREMIUM,
-          delay: soft ? 0 : 0.14,
+          delay: scrollFlowLayout || soft ? 0 : 0.14,
         }}
         className="hero-buttons hero-buttons--mobile"
         style={{ pointerEvents: "auto" }}

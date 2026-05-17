@@ -20,6 +20,12 @@ import { CinematicEyebrow, CinematicTitle } from "./CinematicTitle";
 
 const EASE_PREMIUM: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
+/** Mobile cinematic лента (`scrollFlow`): без «догоняющего» blur/y после инерционного скролла. */
+const SCROLL_FLOW_MOTION_TRANSITION: Transition = {
+  duration: 0.01,
+  ease: EASE_PREMIUM,
+};
+
 /**
  * Z-index активной story-сцены. В one-scene-at-a-time модели одновременно
  * рендерится только одна сцена — статичного значения достаточно, чтобы быть
@@ -113,7 +119,7 @@ function ProofListColumn({
                 : { opacity: 1, x: 0, filter: "blur(0px)" }
           }
           transition={{
-            duration: scrollFlow ? 0.16 : reduceFx ? 0.12 : CARD_ENTER_S,
+            duration: scrollFlow ? 0.01 : reduceFx ? 0.12 : CARD_ENTER_S,
             ease: EASE_PREMIUM,
           }}
         >
@@ -132,7 +138,7 @@ function ProofListColumn({
               }
               animate={{ opacity: 1, y: 0 }}
               transition={{
-                duration: scrollFlow ? 0.12 : reduceFx ? 0.1 : 0.38,
+                duration: scrollFlow ? 0.01 : reduceFx ? 0.1 : 0.38,
                 ease: EASE_PREMIUM,
                 delay:
                   scrollFlow || reduceFx ? 0 : itemBaseDelay + i * itemStagger,
@@ -562,7 +568,7 @@ function SceneCopy({
     ? {
         initial: false as const,
         animate: { opacity: 1, y: 0, filter: "blur(0px)" },
-        transition: { duration: 0.2, ease: EASE_PREMIUM },
+        transition: SCROLL_FLOW_MOTION_TRANSITION,
       }
     : copyMotionProps(narrow, reduceFx);
   const bullets = step.bullets ?? [];
@@ -572,7 +578,7 @@ function SceneCopy({
     ? {
         initial: false as const,
         animate: { opacity: 1, y: 0 },
-        transition: { duration: 0.2, ease: EASE_PREMIUM, delay: 0.04 },
+        transition: SCROLL_FLOW_MOTION_TRANSITION,
       }
     : bulletListMotionProps(narrow, reduceFx);
   const hasSupplementaryList =
@@ -835,9 +841,7 @@ function SceneVisualFrame({
           : vm.animate
       }
       transition={
-        scrollFlow
-          ? { duration: 0.2, ease: EASE_PREMIUM }
-          : vm.transition
+        scrollFlow ? SCROLL_FLOW_MOTION_TRANSITION : vm.transition
       }
     >
       <SceneVisual type={type} />

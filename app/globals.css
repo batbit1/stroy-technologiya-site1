@@ -1554,7 +1554,10 @@ body {
   .landing-scroll-scene,
   .mobile-cinematic-scroll-host,
   .mobile-story-flow,
-  .mobile-story-step {
+  .mobile-cinematic-flow,
+  .mobile-story-step,
+  .mobile-text-step,
+  .mobile-cinematic-step {
     scroll-snap-type: none !important;
     scroll-snap-align: none !important;
     scroll-snap-stop: normal !important;
@@ -1767,16 +1770,16 @@ body {
     box-sizing: border-box;
   }
 
-  /* Ровный mobile cinematic-scroll: каждый шаг = один viewport; сумма = MOBILE_SCENE_COUNT * 100dvh. */
+  /* Mobile cinematic: минимум экран на шаг, без жёсткого max-height (убирает ощущение snap при инерции). */
   .mobile-story-step,
   .mobile-text-step,
   .mobile-cinematic-step {
     box-sizing: border-box !important;
     width: 100%;
-    height: 100dvh !important;
     min-height: 100dvh !important;
-    max-height: 100dvh !important;
-    overflow: hidden !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -1796,13 +1799,11 @@ body {
 
   .mobile-story-step__shell,
   .mobile-cinematic-step__shell,
-  /* Выше блока .cinematic-story-scene.mx-auto… с max-height:none — задаём нужную специфичность под лентой. */
-  .landing-scroll-scene .mobile-story-flow .about-story-scene.about-scene-layout.cinematic-story-scene,
-  .landing-scroll-scene .mobile-story-flow .cinematic-story-scene.mx-auto.flex.flex-col {
-    box-sizing: border-box !important;
-    max-height: calc(100dvh - 92px) !important;
-    overflow: hidden !important;
+  .story-scene-copy-col,
+  .about-proof-column {
     min-height: 0 !important;
+    overflow: visible !important;
+    max-height: none !important;
   }
 
   .mobile-cinematic-step__shell {
@@ -1839,15 +1840,8 @@ body {
     will-change: auto !important;
     flex: 1 1 auto;
     min-height: 0 !important;
-    max-height: 100% !important;
-    overflow: hidden !important;
-  }
-
-  .landing-scroll-scene .mobile-story-flow .story-scene-copy-col,
-  .landing-scroll-scene .mobile-story-flow .about-proof-column {
-    min-height: 0 !important;
-    overflow: hidden !important;
-    max-height: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
   }
 
   .mobile-story-step .about-story-scene,
@@ -1875,7 +1869,8 @@ body {
   .landing-scroll-scene .mobile-story-flow .scene-copy-description,
   .landing-scroll-scene .mobile-story-flow .scene-copy-notes,
   .landing-scroll-scene .mobile-story-flow .about-proof-card {
-    overflow: hidden !important;
+    overflow: visible !important;
+    max-height: none !important;
   }
 
   .landing-scroll-scene .mobile-story-flow .cinematic-story-scene.mx-auto.flex.flex-col,
@@ -1904,7 +1899,8 @@ body {
 
   .landing-scroll-scene .mobile-story-flow .hero-copy {
     min-height: 0 !important;
-    overflow: hidden !important;
+    overflow: visible !important;
+    max-height: none !important;
   }
 
   .landing-scroll-scene .mobile-story-flow .hero-body-lede {

@@ -22,6 +22,8 @@ const IS_DEV = process.env.NODE_ENV === "development";
 /** Max DPR — чёткость на retina без лишнего расхода памяти. */
 const MAX_DPR = 3;
 
+/** Резкий скачок progress при инерционном скролле mobile cinematic — синхрон с целевым progress без лагa lerp. */
+const CIN_SCROLL_PROGRESS_JUMP = 0.08;
 export type HouseSequenceCanvasProps = {
   desktopFrames: number;
   mobileFrames: number;
@@ -541,12 +543,17 @@ export function HouseSequenceCanvas({
     } else if (!wasCinematicMobile && isCinematicScrollMobile) {
       smoothFrameProgressRef.current = raw;
     } else {
-      let s = smoothFrameProgressRef.current;
-      const alpha = 0.22;
-      for (let i = 0; i < 8; i++) {
-        s = s + (raw - s) * alpha;
+      const prev = smoothFrameProgressRef.current;
+      if (Math.abs(raw - prev) > CIN_SCROLL_PROGRESS_JUMP) {
+        smoothFrameProgressRef.current = raw;
+      } else {
+        let s = prev;
+        const alpha = 0.45;
+        for (let i = 0; i < 8; i++) {
+          s = s + (raw - s) * alpha;
+        }
+        smoothFrameProgressRef.current = clamp01(s);
       }
-      smoothFrameProgressRef.current = clamp01(s);
     }
 
     drawScene();
