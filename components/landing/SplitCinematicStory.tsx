@@ -14,6 +14,8 @@ import {
 } from "@/lib/cinematic-scroll-story";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useNavScrollOpenRequestForm } from "@/components/landing/NavScrollContext";
+import type { SiteHero } from "@/data/siteContent";
+import { HeroContent } from "./HeroContent";
 import { CinematicEyebrow, CinematicTitle } from "./CinematicTitle";
 
 const EASE_PREMIUM: [number, number, number, number] = [0.16, 1, 0.3, 1];
@@ -75,11 +77,13 @@ function ProofListColumn({
   items,
   storyIndex,
   reduceFx,
+  scrollFlow = false,
   cardHeader = DEFAULT_PROOF_CARD_HEADER,
 }: {
   items: StoryFeaturePoint[];
   storyIndex: number;
   reduceFx: boolean;
+  scrollFlow?: boolean;
   cardHeader?: string;
 }) {
   const CARD_ENTER_S = 0.64;
@@ -88,24 +92,28 @@ function ProofListColumn({
 
   return (
     <div
-      className="relative min-w-0 flex w-full max-w-full select-none flex-col justify-start pointer-events-none lg:flex-row lg:justify-end"
+      className="relative flex min-w-0 w-full max-w-full select-none flex-col justify-start max-lg:pointer-events-auto lg:pointer-events-none lg:flex-row lg:justify-end"
       aria-label="Преимущества и надёжность"
     >
       <div className="about-proof-card-outer">
         <motion.div
           className="about-proof-card"
           initial={
-            reduceFx
-              ? { opacity: 0 }
-              : { opacity: 0, x: 32, filter: "blur(10px)" }
+            scrollFlow
+              ? false
+              : reduceFx
+                ? { opacity: 0 }
+                : { opacity: 0, x: 32, filter: "blur(10px)" }
           }
           animate={
-            reduceFx
-              ? { opacity: 1 }
-              : { opacity: 1, x: 0, filter: "blur(0px)" }
+            scrollFlow
+              ? { opacity: 1, x: 0, filter: "blur(0px)" }
+              : reduceFx
+                ? { opacity: 1 }
+                : { opacity: 1, x: 0, filter: "blur(0px)" }
           }
           transition={{
-            duration: reduceFx ? 0.12 : CARD_ENTER_S,
+            duration: scrollFlow ? 0.16 : reduceFx ? 0.12 : CARD_ENTER_S,
             ease: EASE_PREMIUM,
           }}
         >
@@ -115,12 +123,19 @@ function ProofListColumn({
             <motion.li
               key={`${storyIndex}-proof-${i}-${fp.title}`}
               className="about-proof-item"
-              initial={reduceFx ? { opacity: 0 } : { opacity: 0, y: 8 }}
+              initial={
+                scrollFlow
+                  ? false
+                  : reduceFx
+                    ? { opacity: 0 }
+                    : { opacity: 0, y: 8 }
+              }
               animate={{ opacity: 1, y: 0 }}
               transition={{
-                duration: reduceFx ? 0.1 : 0.38,
+                duration: scrollFlow ? 0.12 : reduceFx ? 0.1 : 0.38,
                 ease: EASE_PREMIUM,
-                delay: itemBaseDelay + i * itemStagger,
+                delay:
+                  scrollFlow || reduceFx ? 0 : itemBaseDelay + i * itemStagger,
               }}
             >
               <div className="about-proof-item-title">{fp.title}</div>
@@ -528,6 +543,7 @@ function SceneCopy({
   index,
   narrow,
   reduceFx,
+  scrollFlow = false,
   ctaPointerEvents,
   proofListLayout = false,
 }: {
@@ -535,16 +551,30 @@ function SceneCopy({
   index: number;
   narrow: boolean;
   reduceFx: boolean;
+  scrollFlow?: boolean;
   ctaPointerEvents: "auto" | "none";
   /** Левая колонка только eyebrow + title + text; список преимуществ вынесен вправо. */
   proofListLayout?: boolean;
 }) {
   const openRequestForm = useNavScrollOpenRequestForm();
-  const cm = copyMotionProps(narrow, reduceFx);
+  const softFx = reduceFx || scrollFlow;
+  const cm = scrollFlow
+    ? {
+        initial: false as const,
+        animate: { opacity: 1, y: 0, filter: "blur(0px)" },
+        transition: { duration: 0.2, ease: EASE_PREMIUM },
+      }
+    : copyMotionProps(narrow, reduceFx);
   const bullets = step.bullets ?? [];
   const featurePoints = step.featurePoints ?? [];
   const stats = step.stats ?? [];
-  const blm = bulletListMotionProps(narrow, reduceFx);
+  const blm = scrollFlow
+    ? {
+        initial: false as const,
+        animate: { opacity: 1, y: 0 },
+        transition: { duration: 0.2, ease: EASE_PREMIUM, delay: 0.04 },
+      }
+    : bulletListMotionProps(narrow, reduceFx);
   const hasSupplementaryList =
     bullets.length > 0 || (featurePoints.length > 0 && !proofListLayout);
 
@@ -591,7 +621,7 @@ function SceneCopy({
       <div className="relative z-[1] flex flex-col gap-0 text-left scene-copy-stack">
         <div className="split-copy-rule mb-2.5 lg:mb-3" aria-hidden />
         <div className={eyebrowRowClass}>
-          {reduceFx ? (
+          {softFx ? (
             <span
               aria-hidden
               className="inline-block h-px w-14 shrink-0 bg-[rgba(137,103,67,0.34)]"
@@ -613,7 +643,7 @@ function SceneCopy({
             <CinematicEyebrow
               text={step.eyebrow}
               narrow={narrow}
-              reduceFx={reduceFx}
+              reduceFx={softFx}
               className="font-sans text-[0.72rem] font-bold uppercase leading-snug tracking-[0.22em] text-[rgba(23,23,23,0.48)]"
             />
           </div>
@@ -628,7 +658,7 @@ function SceneCopy({
           <CinematicTitle
             text={step.title}
             narrow={narrow}
-            reduceFx={reduceFx}
+            reduceFx={softFx}
             delay={narrow ? 0.1 : 0.14}
             className="premium-engraved-title cinematic-text-render text-balance font-display"
           />
@@ -786,19 +816,29 @@ function SceneVisualFrame({
   type,
   narrow,
   reduceFx,
+  scrollFlow = false,
 }: {
   type: StoryVisualType;
   narrow: boolean;
   reduceFx: boolean;
+  scrollFlow?: boolean;
 }) {
   const vm = visualMotionProps(narrow, reduceFx);
   return (
     <motion.div
       className="min-w-0 w-full max-w-[400px] lg:justify-self-end lg:self-center"
       style={{ transformOrigin: narrow ? "50% 100%" : "90% 50%" }}
-      initial={vm.initial}
-      animate={vm.animate}
-      transition={vm.transition}
+      initial={scrollFlow ? false : vm.initial}
+      animate={
+        scrollFlow
+          ? { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }
+          : vm.animate
+      }
+      transition={
+        scrollFlow
+          ? { duration: 0.2, ease: EASE_PREMIUM }
+          : vm.transition
+      }
     >
       <SceneVisual type={type} />
     </motion.div>
@@ -825,18 +865,120 @@ function StoryScene({
   index,
   narrow,
   reduceFx,
+  scrollFlow = false,
+  chapterSegmentHeight,
 }: {
   step: StoryStep;
   index: number;
   narrow: boolean;
   reduceFx: boolean;
+  /** Вертикальная лента сцен на mobile; без overlay snap. */
+  scrollFlow?: boolean;
+  /** Один сегмент скролла на главу (hero + каждая story), совпадает с timeline canvas. */
+  chapterSegmentHeight?: string;
 }) {
   const visualType = step.visualType ?? defaultVisualType(index);
   const isProofCard = visualType === "proofCard";
   const proofItems = step.featurePoints ?? [];
 
   const mobileTopAlignedScene =
-    step.sceneKey === "about" || step.sceneKey === "services";
+    !scrollFlow &&
+    (step.sceneKey === "about" || step.sceneKey === "services");
+
+  const widthShell =
+    isProofCard
+      ? "min-w-0 w-[calc(100vw-32px)] lg:w-full lg:max-w-none"
+      : "w-[calc(100vw-32px)] max-w-[1600px] lg:w-full";
+
+  const proofSceneClass = scrollFlow
+    ? "about-story-scene about-scene-layout cinematic-story-scene flex min-h-0 w-full min-w-0 flex-col justify-center gap-5 overflow-x-hidden px-0 py-0 lg:h-full lg:max-h-none lg:min-h-0 lg:overflow-visible lg:justify-end lg:pt-0 lg:pb-0"
+    : "about-story-scene about-scene-layout cinematic-story-scene flex h-[min(88dvh,100%)] max-h-[88dvh] min-w-0 flex-col justify-end gap-5 overflow-x-hidden px-0 pt-8 pb-1 lg:h-full lg:max-h-none lg:min-h-0 lg:overflow-visible lg:pt-0 lg:pb-0";
+
+  const splitSceneClass = scrollFlow
+    ? "cinematic-story-scene mx-auto flex min-h-0 w-full flex-col justify-center gap-4 px-0 py-0 lg:grid lg:h-full lg:max-h-none lg:min-h-0 lg:grid-cols-[minmax(280px,min(560px,52vw))_minmax(240px,1fr)_minmax(260px,400px)] lg:items-center lg:justify-end lg:justify-items-stretch lg:gap-6 lg:pl-[max(10px,1.5vw)] lg:pr-[clamp(16px,3.25vw,52px)] lg:pt-0 lg:pb-0 xl:grid-cols-[minmax(520px,680px)_minmax(360px,1fr)_minmax(320px,480px)]"
+    : "cinematic-story-scene mx-auto flex h-[min(88dvh,100%)] max-h-[88dvh] flex-col justify-end gap-4 px-0 pt-8 lg:grid lg:h-full lg:max-h-none lg:min-h-0 lg:grid-cols-[minmax(280px,min(560px,52vw))_minmax(240px,1fr)_minmax(260px,400px)] lg:items-center lg:justify-items-stretch lg:gap-6 lg:pl-[max(10px,1.5vw)] lg:pr-[clamp(16px,3.25vw,52px)] lg:pt-0 lg:pb-0 xl:grid-cols-[minmax(520px,680px)_minmax(360px,1fr)_minmax(320px,480px)]";
+
+  const inner = (
+    <div className={widthShell}>
+        {isProofCard ? (
+          <div data-scene-key={step.sceneKey} className={proofSceneClass}>
+            <div className="story-scene-copy-col relative min-h-0 min-w-0 lg:self-center lg:justify-self-start">
+              <SceneCopy
+                step={step}
+                index={index}
+                narrow={narrow}
+                reduceFx={reduceFx}
+                scrollFlow={scrollFlow}
+                ctaPointerEvents="auto"
+                proofListLayout
+              />
+            </div>
+            <div className="about-proof-column relative min-h-0 min-w-0 shrink-0 lg:justify-self-end lg:self-center">
+              {proofItems.length > 0 ? (
+                <ProofListColumn
+                  items={proofItems}
+                  storyIndex={index}
+                  reduceFx={reduceFx}
+                  scrollFlow={scrollFlow}
+                  cardHeader={
+                    step.proofCardHeader ?? DEFAULT_PROOF_CARD_HEADER
+                  }
+                />
+              ) : null}
+            </div>
+          </div>
+        ) : (
+          <div data-scene-key={step.sceneKey} className={splitSceneClass}>
+            <div className="story-scene-copy-col relative min-h-0 min-w-0 lg:justify-self-start lg:self-center">
+              <SceneCopy
+                step={step}
+                index={index}
+                narrow={narrow}
+                reduceFx={reduceFx}
+                scrollFlow={scrollFlow}
+                ctaPointerEvents="auto"
+              />
+            </div>
+
+            <div
+              className="hidden min-h-0 min-w-[280px] lg:block"
+              aria-hidden
+            />
+
+            <div className="relative min-h-0 min-w-0 shrink-0 pt-2 lg:shrink lg:pt-0">
+              <SceneVisualFrame
+                type={visualType}
+                narrow={narrow}
+                reduceFx={reduceFx}
+                scrollFlow={scrollFlow}
+              />
+            </div>
+          </div>
+        )}
+    </div>
+  );
+
+  if (scrollFlow) {
+    return (
+      <section
+        className={[
+          "mobile-story-step mobile-text-step",
+          mobileTopAlignedScene ? "mobile-story-step--top-weighted" : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+        data-scene-key={step.sceneKey}
+        style={
+          chapterSegmentHeight
+            ? { minHeight: chapterSegmentHeight }
+            : undefined
+        }
+        aria-label={accessibilityStoryLabel(step)}
+      >
+        <div className="mobile-story-step__shell w-full">{inner}</div>
+      </section>
+    );
+  }
 
   return (
     <motion.div
@@ -855,73 +997,13 @@ function StoryScene({
       animate={SCENE_REVEAL_VISIBLE}
       transition={reduceFx ? SCENE_REVEAL_TRANSITION_REDUCED : SCENE_REVEAL_TRANSITION}
     >
-      <div
-        className={
-          isProofCard
-            ? "min-w-0 w-[calc(100vw-32px)] lg:w-full lg:max-w-none"
-            : "w-[calc(100vw-32px)] max-w-[1600px] lg:w-full"
-        }
-      >
-        {isProofCard ? (
-          <div
-            data-scene-key={step.sceneKey}
-            className="about-story-scene about-scene-layout cinematic-story-scene flex h-[min(88dvh,100%)] max-h-[88dvh] min-w-0 flex-col justify-end gap-5 overflow-x-hidden px-0 pt-8 pb-1 lg:h-full lg:max-h-none lg:min-h-0 lg:overflow-visible lg:pt-0 lg:pb-0"
-          >
-            <div className="story-scene-copy-col relative min-h-0 min-w-0 lg:self-center lg:justify-self-start">
-              <SceneCopy
-                step={step}
-                index={index}
-                narrow={narrow}
-                reduceFx={reduceFx}
-                ctaPointerEvents="auto"
-                proofListLayout
-              />
-            </div>
-            <div className="about-proof-column relative min-h-0 min-w-0 shrink-0 lg:justify-self-end lg:self-center">
-              {proofItems.length > 0 ? (
-                <ProofListColumn
-                  items={proofItems}
-                  storyIndex={index}
-                  reduceFx={reduceFx}
-                  cardHeader={
-                    step.proofCardHeader ?? DEFAULT_PROOF_CARD_HEADER
-                  }
-                />
-              ) : null}
-            </div>
-          </div>
-        ) : (
-          <div
-            data-scene-key={step.sceneKey}
-            className="cinematic-story-scene mx-auto flex h-[min(88dvh,100%)] max-h-[88dvh] flex-col justify-end gap-4 px-0 pt-8 lg:grid lg:h-full lg:max-h-none lg:min-h-0 lg:grid-cols-[minmax(280px,min(560px,52vw))_minmax(240px,1fr)_minmax(260px,400px)] lg:items-center lg:justify-items-stretch lg:gap-6 lg:pl-[max(10px,1.5vw)] lg:pr-[clamp(16px,3.25vw,52px)] lg:pt-0 lg:pb-0 xl:grid-cols-[minmax(520px,680px)_minmax(360px,1fr)_minmax(320px,480px)]"
-          >
-            <div className="story-scene-copy-col relative min-h-0 min-w-0 lg:justify-self-start lg:self-center">
-              <SceneCopy
-                step={step}
-                index={index}
-                narrow={narrow}
-                reduceFx={reduceFx}
-                ctaPointerEvents="auto"
-              />
-            </div>
-
-            <div
-              className="hidden min-h-0 min-w-[280px] lg:block"
-              aria-hidden
-            />
-
-            <div className="relative min-h-0 min-w-0 shrink-0 pt-2 lg:shrink lg:pt-0">
-              <SceneVisualFrame
-                type={visualType}
-                narrow={narrow}
-                reduceFx={reduceFx}
-              />
-            </div>
-          </div>
-        )}
-      </div>
+      {inner}
     </motion.div>
   );
+}
+
+function accessibilityStoryLabel(step: StoryStep): string {
+  return step.title.replace(/\r?\n/g, " ").trim() || step.eyebrow;
 }
 
 type SplitCinematicStoryProps = {
@@ -931,6 +1013,54 @@ type SplitCinematicStoryProps = {
    */
   activeStoryIndex: number;
 };
+
+export type MobileCinematicStoryScrollFlowProps = {
+  heroData: SiteHero;
+  onGoPortfolio: () => void;
+  onOpenRequestForm: () => void;
+};
+
+/**
+ * Mobile: первый экран — Hero, далее STORY_STEPS; весь блок скроллится поверх fixed-фона.
+ */
+export function MobileCinematicStoryScrollFlow({
+  heroData,
+  onGoPortfolio,
+  onOpenRequestForm,
+}: MobileCinematicStoryScrollFlowProps) {
+  const mqReduce = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const fmReduce = useReducedMotion();
+  const reduceFx = Boolean(mqReduce || fmReduce);
+
+  return (
+    <div className="mobile-cinematic-flow pointer-events-auto w-full">
+      <section
+        className="mobile-cinematic-step mobile-hero-step mobile-text-step mobile-story-step"
+        aria-label="Главный экран"
+      >
+        <div className="mobile-cinematic-step__shell flex min-h-0 w-full min-w-0 flex-1 flex-col">
+          <HeroContent
+            variant="mobile"
+            data={heroData}
+            onGoPortfolio={onGoPortfolio}
+            onOpenRequestForm={onOpenRequestForm}
+            scrollFlowLayout
+          />
+        </div>
+      </section>
+      {STORY_STEPS.map((step, index) => (
+        <StoryScene
+          key={step.sceneKey}
+          step={step}
+          index={index}
+          narrow
+          reduceFx={reduceFx}
+          scrollFlow
+        />
+      ))}
+    </div>
+  );
+}
 
 /**
  * SplitCinematicStory — ONE-SCENE-AT-A-TIME контроллер story-сцен.

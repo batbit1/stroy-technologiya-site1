@@ -17,6 +17,11 @@ export type HeroContentProps = {
   data: SiteHero;
   onGoPortfolio: () => void;
   onOpenRequestForm: () => void;
+  /**
+   * Только mobile: hero как первый блок вертикальной ленты (не sticky overlay).
+   * Desktop-вариант и вёрстка lg+ не затрагиваются.
+   */
+  scrollFlowLayout?: boolean;
 };
 
 /** Слева: локальный cinematic mist под колонкой текста; справа дом остаётся читаемым. */
@@ -277,18 +282,118 @@ function HeroMobile({
   reduceFx,
   onGoPortfolio,
   onOpenRequestForm,
+  scrollFlowLayout = false,
 }: {
   data: SiteHero;
   reduceFx: boolean;
   onGoPortfolio: () => void;
   onOpenRequestForm: () => void;
+  scrollFlowLayout?: boolean;
 }) {
   const titleText = [...HERO_HEADLINE_LINES].join("\n");
 
-  const enterSub = reduceFx
+  const soft = reduceFx || scrollFlowLayout;
+
+  const enterSub = soft
     ? { opacity: 1, y: 0, filter: "blur(0px)" }
     : { opacity: 0, y: 10, filter: "blur(6px)" };
   const aliveSub = { opacity: 1, y: 0, filter: "blur(0px)" };
+
+  const scrim = (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute inset-0"
+      style={{ background: HERO_SCRIM_MO }}
+    />
+  );
+
+  const columnClass = scrollFlowLayout
+    ? "relative mx-auto flex w-full max-w-[calc(100vw-32px)] flex-col px-1 xs:max-w-[min(22.5rem,calc(100vw-36px))] xs:px-2 pt-0"
+    : "relative mx-auto flex w-full max-w-[calc(100vw-32px)] flex-col px-1 xs:max-w-[min(22.5rem,calc(100vw-36px))] xs:px-2";
+
+  const columnStyle = scrollFlowLayout
+    ? undefined
+    : {
+        paddingTop:
+          "calc(5.625rem + env(safe-area-inset-top, 0px) + max(14px, 3.75svh))",
+      };
+
+  const body = (
+    <div className="hero-copy">
+      <div className="hero-readability-glow" aria-hidden />
+      <div className="hero-copy-eyebrow">
+        <HeroCoverEyebrow
+          narrow
+          reduceFx={soft}
+          delay={0}
+          className="font-sans text-[0.72rem] font-bold uppercase leading-snug tracking-[0.24em] text-[rgba(23,23,23,0.46)]"
+        />
+      </div>
+
+      <CinematicTitle
+        as="h1"
+        text={titleText}
+        narrow
+        reduceFx={soft}
+        active
+        delay={0.04}
+        className="premium-engraved-title hero-cinematic-title hero-title-measure cinematic-text-render font-display"
+      />
+
+      <motion.p
+        initial={enterSub}
+        animate={aliveSub}
+        transition={{
+          duration: soft ? 0.12 : CINEMATIC_TEXT_ENTER_S,
+          ease: EASE_PREMIUM,
+          delay: soft ? 0 : 0.08,
+        }}
+        className="hero-body-lede font-sans"
+      >
+        {data.subheadline}
+      </motion.p>
+
+      <motion.div
+        initial={enterSub}
+        animate={aliveSub}
+        transition={{
+          duration: soft ? 0.12 : CINEMATIC_TEXT_ENTER_S,
+          ease: EASE_PREMIUM,
+          delay: soft ? 0 : 0.14,
+        }}
+        className="hero-buttons hero-buttons--mobile"
+        style={{ pointerEvents: "auto" }}
+      >
+        <HeroPremiumButton fullWidthMobile onClick={onOpenRequestForm}>
+          {data.ctaPrimary}
+        </HeroPremiumButton>
+
+        <HeroSecondaryLink
+          centeredMobile
+          className="hero-secondary-cta"
+          onClick={onGoPortfolio}
+        >
+          {data.ctaSecondary}
+        </HeroSecondaryLink>
+      </motion.div>
+    </div>
+  );
+
+  if (scrollFlowLayout) {
+    return (
+      <div
+        className="hero-content hero-content--scroll-flow relative z-[22] flex min-h-full w-full flex-1 flex-col pointer-events-auto lg:hidden"
+        data-hero-content=""
+      >
+        {scrim}
+        <div
+          className={`${columnClass} flex min-h-0 flex-1 flex-col justify-center`}
+        >
+          {body}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -298,93 +403,26 @@ function HeroMobile({
       transition={reduceFx ? SCENE_REVEAL_TRANSITION_REDUCED : SCENE_REVEAL_TRANSITION}
       style={{ willChange: "opacity, transform, filter" }}
     >
-      <div
-        aria-hidden
-        className="absolute inset-0"
-        style={{ background: HERO_SCRIM_MO }}
-      />
+      {scrim}
 
-      <div
-        className="relative mx-auto flex w-full max-w-[calc(100vw-32px)] flex-col px-1 xs:max-w-[min(22.5rem,calc(100vw-36px))] xs:px-2"
-        style={{
-          paddingTop:
-            "calc(5.625rem + env(safe-area-inset-top, 0px) + max(14px, 3.75svh))",
-        }}
-      >
-        <div className="hero-copy">
-          <div className="hero-readability-glow" aria-hidden />
-          <div className="hero-copy-eyebrow">
-            <HeroCoverEyebrow
-              narrow
-              reduceFx={reduceFx}
-              delay={0}
-              className="font-sans text-[0.72rem] font-bold uppercase leading-snug tracking-[0.24em] text-[rgba(23,23,23,0.46)]"
-            />
-          </div>
-
-          <CinematicTitle
-            as="h1"
-            text={titleText}
-            narrow
-            reduceFx={reduceFx}
-            active
-            delay={0.04}
-            className="premium-engraved-title hero-cinematic-title hero-title-measure cinematic-text-render font-display"
-          />
-
-          <motion.p
-            initial={enterSub}
-            animate={aliveSub}
-            transition={{
-              duration: reduceFx ? 0.12 : CINEMATIC_TEXT_ENTER_S,
-              ease: EASE_PREMIUM,
-              delay: reduceFx ? 0 : 0.08,
-            }}
-            className="hero-body-lede font-sans"
-          >
-            {data.subheadline}
-          </motion.p>
-
-          <motion.div
-            initial={enterSub}
-            animate={aliveSub}
-            transition={{
-              duration: reduceFx ? 0.12 : CINEMATIC_TEXT_ENTER_S,
-              ease: EASE_PREMIUM,
-              delay: reduceFx ? 0 : 0.14,
-            }}
-            className="hero-buttons hero-buttons--mobile"
-            style={{ pointerEvents: "auto" }}
-          >
-            <HeroPremiumButton fullWidthMobile onClick={onOpenRequestForm}>
-              {data.ctaPrimary}
-            </HeroPremiumButton>
-
-            <HeroSecondaryLink
-              centeredMobile
-              className="hero-secondary-cta"
-              onClick={onGoPortfolio}
-            >
-              {data.ctaSecondary}
-            </HeroSecondaryLink>
-          </motion.div>
-        </div>
+      <div className={columnClass} style={columnStyle}>
+        {body}
       </div>
     </motion.div>
   );
 }
 
 /**
- * Hero overlay (chapter 0). Рендерится только пока activeChapterIndex === 0
- * (управляет LandingScrollScene). Никакой scroll-driven visibility — wrapper
- * либо в DOM в финальном, чётком виде (после короткого mount-reveal'а), либо
- * отсутствует. Поймать blur/полупрозрачный Hero на промежуточном кадре нельзя.
+ * Hero overlay (chapter 0):
+ * - Desktop (lg+): HeroDesktop в sticky при heroIsActive (LandingScrollScene).
+ * - Mobile: HeroMobile первый шаг `MobileCinematicStoryScrollFlow` (scrollFlowLayout) поверх fixed-фона.
  */
 export function HeroContent({
   variant,
   data,
   onGoPortfolio,
   onOpenRequestForm,
+  scrollFlowLayout = false,
 }: HeroContentProps) {
   const mqReduce = useMediaQuery("(prefers-reduced-motion: reduce)");
   const fmReduce = useReducedMotion();
@@ -397,6 +435,7 @@ export function HeroContent({
         reduceFx={reduceFx}
         onGoPortfolio={onGoPortfolio}
         onOpenRequestForm={onOpenRequestForm}
+        scrollFlowLayout={scrollFlowLayout}
       />
     );
   }

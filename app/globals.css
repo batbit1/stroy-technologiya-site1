@@ -78,7 +78,7 @@
 html {
   background: var(--background);
   overscroll-behavior-y: none;
-  scroll-padding-top: calc(4.75rem + env(safe-area-inset-top, 0px));
+  scroll-padding-top: calc(5rem + env(safe-area-inset-top, 0px));
 }
 
 @media (width >= 1024px) {
@@ -209,6 +209,14 @@ body {
     transform: scale(1);
     will-change: auto;
   }
+}
+
+/* Mobile cinematic: обёртка sequence без scale-breathe (transform ломает ощущение «закрепа»). */
+.mobile-cinematic-canvas-root {
+  transform: none !important;
+  animation: none !important;
+  will-change: auto !important;
+  filter: contrast(1.04) saturate(1.03) brightness(1.01);
 }
 
 /* ─────────────────────────────────────────
@@ -602,46 +610,98 @@ body {
   }
 }
 
-/* ── Site header — mobile burger & panel ─────────────────────────────── */
+/* ── Site header — fixed; mobile menu + panel (desktop nav без изменений) ── */
 
-.site-header-burger {
+.site-header {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 100;
+  width: 100%;
   box-sizing: border-box;
-  display: flex;
-  width: 44px;
-  height: 44px;
+  margin: 0;
+  padding: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  background: rgba(245, 239, 232, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+@media (max-width: 1023px) {
+  .site-header {
+    z-index: 9999;
+    border-bottom: 1px solid rgba(80, 60, 40, 0.1);
+    background: rgba(250, 246, 238, 0.72);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+
+  .site-header-inner {
+    height: 64px;
+    min-height: 64px;
+    max-height: 64px;
+    box-sizing: border-box;
+  }
+}
+
+@media (min-width: 1024px) {
+  .site-header-inner {
+    min-height: 80px;
+    box-sizing: border-box;
+  }
+}
+
+.mobile-menu-trigger {
+  box-sizing: border-box;
   flex-shrink: 0;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 8px;
   border-radius: 999px;
   border: 1px solid rgba(30, 24, 18, 0.1);
-  background: rgba(245, 239, 232, 0.72);
+  background: rgba(255, 252, 246, 0.55);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  padding: 0;
+  padding: 8px 14px 8px 16px;
+  margin: 0;
   cursor: pointer;
   outline: none;
 }
 
-/* Базовый display:flex перебивает Tailwind lg:hidden — скрываем бургер отдельно на desktop */
-@media (min-width: 1024px) {
-  .site-header-burger {
-    display: none !important;
-  }
+.mobile-menu-trigger__label {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  color: rgba(22, 18, 14, 0.88);
 }
 
-.site-header-burger:focus-visible {
-  box-shadow: 0 0 0 2px rgba(23, 20, 17, 0.14);
+.mobile-burger-lines {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
 }
 
-.site-header-burger-line {
+.mobile-burger-lines span {
   display: block;
-  width: 20px;
+  width: 18px;
   height: 2px;
   flex-shrink: 0;
   border-radius: 1px;
   background: rgba(30, 24, 18, 0.76);
+}
+
+.mobile-menu-trigger:focus-visible {
+  box-shadow: 0 0 0 2px rgba(23, 20, 17, 0.14);
+}
+
+@media (min-width: 1024px) {
+  .mobile-menu-trigger {
+    display: none !important;
+  }
 }
 
 .site-header-mobile-backdrop {
@@ -650,7 +710,7 @@ body {
   right: 0;
   bottom: 0;
   left: 0;
-  z-index: 101;
+  z-index: 9997;
   margin: 0;
   border: 0;
   padding: 0;
@@ -669,17 +729,20 @@ body {
   top: 72px;
   right: 12px;
   left: 12px;
-  z-index: 102;
-  max-height: min(calc(100vh - 88px), 520px);
+  z-index: 9998;
+  max-height: min(calc(100dvh - 88px), 520px);
   overflow-x: hidden;
   overflow-y: auto;
-  padding: 8px 16px 16px;
-  border-radius: 28px;
-  border: 1px solid rgba(30, 24, 18, 0.08);
-  background: rgba(245, 239, 232, 0.94);
+  padding: 12px;
+  border-radius: 26px;
+  border: 1px solid rgba(80, 60, 40, 0.12);
+  background: rgba(250, 246, 238, 0.96);
   backdrop-filter: blur(22px);
   -webkit-backdrop-filter: blur(22px);
-  box-shadow: 0 28px 80px rgba(40, 28, 16, 0.16);
+  box-shadow: 0 28px 80px rgba(40, 28, 16, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 @media (min-width: 1024px) {
@@ -692,32 +755,38 @@ body {
   box-sizing: border-box;
   display: flex;
   width: 100%;
-  min-height: 56px;
+  height: 48px;
+  min-height: 48px;
+  flex-shrink: 0;
   align-items: center;
   border: 0;
-  border-bottom: 1px solid rgba(30, 24, 18, 0.06);
-  background: transparent;
-  padding: 10px 4px;
+  border-radius: 18px;
+  background: rgba(255, 252, 246, 0.35);
+  padding: 0 14px;
   cursor: pointer;
   text-align: left;
   font-family: var(--font-sans);
   font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
+  font-weight: 650;
+  letter-spacing: 0.04em;
   line-height: 1.25;
-  text-transform: uppercase;
-  color: rgba(30, 24, 18, 0.82);
+  color: rgba(22, 18, 14, 0.88);
   outline: none;
 }
 
 .site-header-mobile-link:focus-visible {
   color: rgba(20, 16, 14, 0.96);
-  background: rgba(255, 252, 246, 0.35);
+  background: rgba(255, 252, 246, 0.55);
+  box-shadow: 0 0 0 2px rgba(23, 20, 17, 0.12);
 }
 
-.site-header-mobile-cta-wrap {
-  margin-top: 12px;
-  padding-top: 4px;
+.site-header-mobile-link--cta {
+  margin-top: 4px;
+  justify-content: center;
+  text-align: center;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  background: rgba(42, 34, 28, 0.06);
 }
 
 /* ── Portfolio showcase (single-viewer block) ───────────────────────── */
@@ -1490,7 +1559,7 @@ body {
     min-height: 0;
     justify-content: center;
     gap: clamp(16px, 4vw, 20px);
-    padding-top: 72px;
+    padding-top: 80px;
     padding-bottom: 18px;
     overflow-x: hidden;
   }
@@ -1553,6 +1622,171 @@ body {
   .cinematic-story-scene .scene-copy-premium-cta.premium-cta-button--primary .premium-cta-button__label {
     font-size: 11px !important;
     letter-spacing: 0.12em;
+  }
+
+  /* Mobile landing: fixed viewport-фон вне потока; скроллится только текстовый слой (Hero + story). */
+  .landing-scroll-scene {
+    position: relative !important;
+    min-height: calc(var(--mobile-scene-count, 7) * 100dvh) !important;
+    background: transparent !important;
+    overflow: visible !important;
+  }
+
+  .portfolio-showcase {
+    z-index: 20;
+  }
+
+  .contact-section-root {
+    z-index: 20;
+  }
+
+  .cinematic-bg,
+  .mobile-cinematic-bg,
+  .house-sequence-layer,
+  .house-sequence-canvas-wrapper {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-width: none !important;
+    z-index: 0 !important;
+    overflow: hidden !important;
+    transform: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    pointer-events: none;
+    box-sizing: border-box;
+  }
+
+  .mobile-cinematic-bg__stage {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    box-sizing: border-box;
+  }
+
+  .mobile-cinematic-bg .scene-grain-layer {
+    animation: none !important;
+    transform: none !important;
+    will-change: auto !important;
+  }
+
+  .mobile-cinematic-bg .mobile-cinematic-canvas-root,
+  .mobile-cinematic-bg .mobile-cinematic-canvas-root canvas,
+  .house-sequence-layer .mobile-cinematic-canvas-root canvas,
+  .mobile-cinematic-bg canvas,
+  .house-sequence-layer canvas {
+    transform: none !important;
+  }
+
+  .mobile-cinematic-bg canvas,
+  .house-sequence-layer canvas {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    display: block !important;
+    transform: none !important;
+    object-fit: cover;
+    object-position: center center;
+  }
+
+  .mobile-story-flow {
+    position: relative !important;
+    z-index: 10 !important;
+    width: 100% !important;
+    background: transparent !important;
+    box-sizing: border-box;
+  }
+
+  .mobile-text-step {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent !important;
+  }
+
+  .mobile-cinematic-flow {
+    position: relative;
+    width: 100%;
+    pointer-events: auto;
+    min-height: calc(var(--mobile-scene-count, 7) * 100dvh);
+  }
+
+  .mobile-cinematic-step,
+  .mobile-story-step {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-top: calc(80px + env(safe-area-inset-top, 0px));
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
+    background: transparent !important;
+  }
+
+  .mobile-cinematic-step__shell {
+    display: flex;
+    min-height: 0;
+    width: 100%;
+    max-width: min(1600px, 100%);
+    min-width: 0;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+  }
+
+  .mobile-hero-step .hero-content,
+  .mobile-hero-step .hero-content--scroll-flow,
+  .mobile-hero-step [data-hero-content] {
+    position: relative !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    will-change: auto !important;
+  }
+
+  .mobile-story-step__shell {
+    display: flex;
+    min-height: 0;
+    width: 100%;
+    max-width: min(1600px, 100%);
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+  }
+
+  .mobile-story-step .about-story-scene,
+  .mobile-story-step .cinematic-story-scene {
+    position: relative !important;
+    inset: auto !important;
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    will-change: auto !important;
+  }
+
+  /* Внешний step уже даёт отступ под header — не дублируем padding у inner scene. */
+  .mobile-story-step .about-story-scene.about-scene-layout.cinematic-story-scene,
+  .mobile-story-step .cinematic-story-scene.mx-auto.flex.flex-col {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
   }
 }
 
@@ -1653,6 +1887,13 @@ body {
     text-transform: none;
     letter-spacing: 0.03em;
     text-shadow: none;
+  }
+
+  /* Вертикальная mobile-лента: внешний step уже 100dvh + отступ под header. */
+  .mobile-story-step [data-scene-key="about"].about-story-scene,
+  .mobile-story-step [data-scene-key="services"].about-story-scene {
+    min-height: 0 !important;
+    padding: 0 !important;
   }
 }
 
@@ -2798,6 +3039,24 @@ body {
   font-weight: 600 !important;
   letter-spacing: 0.14em !important;
   text-transform: uppercase !important;
+}
+
+.contact-request-form-feedback {
+  margin: 14px 0 0;
+  text-align: center;
+  font-family: var(--font-sans);
+  font-size: clamp(0.82rem, 2vw, 0.9rem);
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+}
+
+.contact-request-form-feedback--success {
+  color: rgba(52, 92, 52, 0.92);
+}
+
+.contact-request-form-feedback--error {
+  color: rgba(140, 52, 42, 0.92);
 }
 
 .contact-request-form-consent {

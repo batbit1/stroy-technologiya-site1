@@ -15,50 +15,50 @@ export function SiteHeader({
   onGoContacts,
   onOpenRequestForm,
 }: SiteHeaderProps) {
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    if (!menuOpen) return;
+    if (!isMobileMenuOpen) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = prev;
     };
-  }, [menuOpen]);
+  }, [isMobileMenuOpen]);
 
   useEffect(() => {
-    if (!menuOpen) return;
+    if (!isMobileMenuOpen) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setMenuOpen(false);
+      if (e.key === "Escape") setIsMobileMenuOpen(false);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [menuOpen]);
+  }, [isMobileMenuOpen]);
 
   const runAndClose = useCallback((fn: () => void) => {
-    setMenuOpen(false);
+    setIsMobileMenuOpen(false);
     fn();
   }, []);
 
   return (
-    <header className="site-header fixed left-0 top-0 z-[100] w-full border-b border-black/5 bg-[#f5efe6]/80 backdrop-blur-md">
-      <div className="mx-auto flex h-[72px] max-w-[1680px] items-center justify-between px-4 md:h-20 md:px-8">
+    <header className="site-header">
+      <div className="site-header-inner mx-auto flex max-w-[1680px] items-center justify-between gap-3 px-4 lg:px-8">
         <button
           type="button"
           onClick={onGoHome}
           aria-label="СТРОЙ ТЕХНОЛОГИЯ — главная"
-          className="min-w-0 cursor-pointer border-0 bg-transparent p-0 text-left leading-none outline-none focus-visible:ring-2 focus-visible:ring-neutral-900/20 focus-visible:ring-offset-2"
+          className="site-header-brand min-w-0 flex-1 cursor-pointer border-0 bg-transparent p-0 text-left leading-none outline-none focus-visible:ring-2 focus-visible:ring-neutral-900/20 focus-visible:ring-offset-2 lg:flex-none"
         >
           <div className="text-[16px] font-medium leading-none tracking-[0.12em] text-neutral-900 md:text-[18px] md:tracking-[0.16em]">
             СТРОЙ ТЕХНОЛОГИЯ
           </div>
-          <div className="mt-1 hidden text-[11px] leading-tight tracking-[0.08em] text-neutral-900/45 md:block">
+          <div className="mt-1 hidden text-[11px] leading-tight tracking-[0.08em] text-neutral-900/45 lg:block">
             архитектурная студия под ключ
           </div>
         </button>
 
         <nav
-          className="hidden items-center gap-10 lg:flex"
+          className="site-header-nav-desktop hidden items-center gap-10 lg:flex"
           aria-label="Основная навигация"
         >
           <button
@@ -88,33 +88,35 @@ export function SiteHeader({
           <button
             type="button"
             onClick={onOpenRequestForm}
-            className="site-header-cta-desktop premium-cta-button premium-cta-button--primary premium-cta-button--header group/hp relative hidden cursor-pointer items-center justify-center border-0 font-sans outline-none ring-offset-2 ring-offset-[var(--paper-soft)] focus-visible:ring-2 focus-visible:ring-neutral-900/30 lg:inline-flex"
+            className="site-header-cta-desktop premium-cta-button premium-cta-button--primary premium-cta-button--header group/hp relative hidden h-11 cursor-pointer items-center justify-center border-0 px-5 font-sans outline-none ring-offset-2 ring-offset-[var(--paper-soft)] focus-visible:ring-2 focus-visible:ring-neutral-900/30 lg:flex"
           >
             <span className="premium-cta-button__label">Оставить заявку</span>
           </button>
 
           <button
             type="button"
-            className="site-header-burger flex lg:hidden"
-            aria-expanded={menuOpen}
+            className="mobile-menu-trigger flex items-center gap-2 rounded-full lg:hidden"
+            aria-label={isMobileMenuOpen ? "Закрыть меню" : "Открыть меню"}
+            aria-expanded={isMobileMenuOpen}
             aria-controls="site-header-mobile-menu"
-            aria-label={menuOpen ? "Закрыть меню" : "Открыть меню"}
-            onClick={() => setMenuOpen((o) => !o)}
+            onClick={() => setIsMobileMenuOpen((v) => !v)}
           >
-            <span className="site-header-burger-line" />
-            <span className="site-header-burger-line" />
-            <span className="site-header-burger-line" />
+            <span className="mobile-menu-trigger__label">Меню</span>
+            <span className="mobile-burger-lines" aria-hidden>
+              <span />
+              <span />
+            </span>
           </button>
         </div>
       </div>
 
-      {menuOpen ? (
+      {isMobileMenuOpen ? (
         <>
           <button
             type="button"
             aria-label="Закрыть меню"
             className="site-header-mobile-backdrop lg:hidden"
-            onClick={() => setMenuOpen(false)}
+            onClick={() => setIsMobileMenuOpen(false)}
           />
           <nav
             id="site-header-mobile-menu"
@@ -142,15 +144,13 @@ export function SiteHeader({
             >
               Контакты
             </button>
-            <div className="site-header-mobile-cta-wrap">
-              <button
-                type="button"
-                onClick={() => runAndClose(onOpenRequestForm)}
-                className="premium-cta-button premium-cta-button--primary flex h-[52px] w-full cursor-pointer items-center justify-center border-0 px-[28px] font-sans text-[12px] font-semibold uppercase tracking-[0.14em] outline-none focus-visible:ring-2 focus-visible:ring-neutral-900/30 focus-visible:ring-offset-2"
-              >
-                <span className="premium-cta-button__label">Оставить заявку</span>
-              </button>
-            </div>
+            <button
+              type="button"
+              className="site-header-mobile-link site-header-mobile-link--cta"
+              onClick={() => runAndClose(onOpenRequestForm)}
+            >
+              Оставить заявку
+            </button>
           </nav>
         </>
       ) : null}

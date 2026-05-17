@@ -10,6 +10,15 @@ import {
 
 const PHONE_PREFIX = "+7 ";
 
+const TASK_TYPE_LABELS: Record<string, string> = {
+  house: "Частный дом",
+  commercial: "Коммерческий объект",
+  industrial: "Промышленный объект",
+  reconstruction: "Реконструкция / пристройка",
+  design: "Проектирование и документация",
+  other: "Другое",
+};
+
 export function normalizePhone(value: string) {
   const digits = value.replace(/\D/g, "");
 
@@ -27,18 +36,24 @@ export function normalizePhone(value: string) {
 export type ContactFormProps = {
   idPrefix: string;
   className?: string;
-  onSubmit?: FormEventHandler<HTMLFormElement>;
   onPrivacyPolicyClick?: () => void;
+  /** После успешной отправки (например закрыть модальное окно). */
+  onSent?: () => void;
 };
 
 export function ContactForm({
   idPrefix,
   className,
-  onSubmit,
   onPrivacyPolicyClick,
+  onSent,
 }: ContactFormProps) {
   const pid = (suffix: string) => `${idPrefix}-${suffix}`;
   const [phone, setPhone] = useState(PHONE_PREFIX);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [feedback, setFeedback] = useState<
+    | null
+    | { type: "success" | "error"; text: string }
+  >(null);
 
   const onPhoneChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setPhone(normalizePhone(e.target.value));
@@ -55,8 +70,7 @@ export function ContactForm({
     const pl = PHONE_PREFIX.length;
 
     if (e.key === "Backspace") {
-      const cursorBlocksPrefix =
-        start === end && start <= pl;
+      const cursorBlocksPrefix = start === end && start <= pl;
       const selectionTouchesPrefix = start < end && start < pl;
       if (cursorBlocksPrefix || selectionTouchesPrefix) {
         e.preventDefault();
@@ -68,10 +82,91 @@ export function ContactForm({
     }
   }, []);
 
+  const handleSubmit = useCallback<FormEventHandler<HTMLFormElement>>(
+    async (event) => {
+      event.preventDefault();
+      console.log("[ContactForm] submit clicked");
+
+      const form = event.currentTarget;
+      const fd = new FormData(form);
+      const name = String(fd.get("name") ?? "").trim();
+      const taskRaw = String(fd.get("taskType") ?? "").trim();
+      const comment = String(fd.get("comment") ?? "").trim();
+      const phoneTrim = phone.trim();
+      const digits = phoneTrim.replace(/\D/g, "");
+
+      setFeedback(null);
+
+      if (!name) {
+        setFeedback({
+          type: "error",
+          text: "Укажите, пожалуйста, имя.",
+        });
+        return;
+      }
+
+      if (digits.length < 11) {
+        setFeedback({
+          type: "error",
+          text: "Укажите корректный номер телефона.",
+        });
+        return;
+      }
+
+      const projectType =
+        taskRaw && TASK_TYPE_LABELS[taskRaw]
+          ? TASK_TYPE_LABELS[taskRaw]
+          : taskRaw || "Не указано";
+
+      setIsSubmitting(true);
+
+      try {
+        const response = await fetch("/api/send-telegram", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name,
+            phone: phoneTrim,
+            projectType,
+            comment,
+          }),
+        });
+
+        const data = (await response.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+
+        if (!response.ok) {
+          throw new Error(data?.error ?? "Не удалось отправить заявку");
+        }
+
+        setFeedback({
+          type: "success",
+          text: "Заявка отправлена. Мы свяжемся с вами.",
+        });
+        form.reset();
+        setPhone(PHONE_PREFIX);
+        onSent?.();
+      } catch (err) {
+        console.error("[ContactForm] submit error", err);
+        setFeedback({
+          type: "error",
+          text:
+            "Не удалось отправить заявку. Попробуйте ещё раз или позвоните.",
+        });
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [onSent, phone],
+  );
+
   return (
     <form
       className={["contact-request-form", className].filter(Boolean).join(" ")}
-      onSubmit={onSubmit}
+      onSubmit={handleSubmit}
       aria-label="Форма заявки"
       noValidate
     >
@@ -156,10 +251,24 @@ export function ContactForm({
         <div className="contact-request-form-submit-wrap">
           <button
             type="submit"
+            disabled={isSubmitting}
             className="contact-request-form-submit premium-cta-button premium-cta-button--primary"
           >
-            <span className="premium-cta-button__label">Отправить заявку</span>
+            <span className="premium-cta-button__label">
+              {isSubmitting ? "Отправляем..." : "Отправить заявку"}
+            </span>
           </button>
+
+          {feedback ? (
+            <p
+              className={`contact-request-form-feedback contact-request-form-feedback--${feedback.type}`}
+              role="status"
+              aria-live="polite"
+            >
+              {feedback.text}
+            </p>
+          ) : null}
+
           <p className="contact-request-form-consent">
             Нажимая кнопку, вы соглашаетесь с{" "}
             {onPrivacyPolicyClick ? (

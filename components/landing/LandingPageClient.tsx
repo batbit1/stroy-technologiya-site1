@@ -12,27 +12,21 @@ export function LandingPageClient() {
   const portfolioAnchorRef = useRef<HTMLDivElement | null>(null);
   const contactsAnchorRef = useRef<HTMLDivElement | null>(null);
 
-  const getHeaderOffset = () => {
-    return window.innerWidth < 768 ? 84 : 96;
-  };
-
-  const getAbsoluteTop = (element: HTMLElement) => {
-    const rect = element.getBoundingClientRect();
-    return rect.top + window.scrollY;
-  };
-
-  const scrollToAnchor = (anchor: HTMLDivElement | null) => {
+  const scrollToAnchor = useCallback((anchor: HTMLDivElement | null) => {
     if (!anchor) {
       console.warn("[nav] anchor missing");
       return;
     }
 
-    const top = getAbsoluteTop(anchor) - getHeaderOffset();
+    const headerOffset = window.innerWidth < 768 ? 84 : 96;
+    const rect = anchor.getBoundingClientRect();
+    const absoluteTop = rect.top + window.scrollY;
+    const top = absoluteTop - headerOffset;
 
     console.log("[nav] target", anchor.dataset.navAnchor, {
       rectTop: anchor.getBoundingClientRect().top,
       scrollY: window.scrollY,
-      absoluteTop: getAbsoluteTop(anchor),
+      absoluteTop,
       finalTop: top,
     });
 
@@ -40,26 +34,26 @@ export function LandingPageClient() {
       top,
       behavior: "auto",
     });
-  };
+  }, []);
 
-  const goHome = () => {
+  const goHome = useCallback(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
-  };
+  }, []);
 
-  const goPortfolio = () => {
+  const goPortfolio = useCallback(() => {
     scrollToAnchor(portfolioAnchorRef.current);
-  };
+  }, [scrollToAnchor]);
 
-  const goContacts = () => {
+  const goContacts = useCallback(() => {
     scrollToAnchor(contactsAnchorRef.current);
-  };
+  }, [scrollToAnchor]);
 
   const openRequestForm = useCallback(() => {
     scrollToAnchor(contactsAnchorRef.current);
     requestAnimationFrame(() => {
       dispatchOpenContactRequestForm();
     });
-  }, []);
+  }, [scrollToAnchor]);
 
   return (
     <NavScrollProvider goContacts={goContacts} openRequestForm={openRequestForm}>

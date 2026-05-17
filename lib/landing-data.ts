@@ -4,6 +4,13 @@ export const DESKTOP_SEQUENCE_FRAMES = 122;
 /** Количество кадров mobile-sequence (frame_0001 … frame_0122) */
 export const MOBILE_SEQUENCE_FRAMES = 122;
 
+/**
+ * Высота scroll-spacer под sticky-сцену на узкой вёрстке (в vh), без единицы.
+ * Должна совпадать с `SCROLL_LENGTH_VH_MOBILE` в `LandingScrollScene.tsx`
+ * (сегменты глав = spacer / (STORY_STEPS.length + 1)).
+ */
+export const MOBILE_LANDING_SCROLL_SPACER_VH = 1250;
+
 /** Микролиния преимуществ под hero-описанием (первый экран). */
 export const HERO_MICRO_BENEFITS = [
   "Гарантия качества",

@@ -654,12 +654,6 @@ export function ContactSection() {
 
               idPrefix="contact-modal"
 
-              onSubmit={(e) => {
-
-                e.preventDefault();
-
-              }}
-
               onPrivacyPolicyClick={() => setPolicyModalOpen(true)}
 
             />

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { AnimatePresence, motion, useReducedMotion, type PanInfo } from "framer-motion";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   PORTFOLIO_IMAGE_BLUR_DATA_URL,
   PORTFOLIO_SHOWCASE_PROJECTS,
@@ -68,12 +68,10 @@ export function PortfolioSection() {
 
   const total = projects.length;
 
-  useEffect(() => {
-    if (total === 0) return;
-    setActiveIndex((i) => Math.min(i, total - 1));
-  }, [total]);
-
   const idx = total === 0 ? 0 : Math.min(activeIndex, total - 1);
+  if (idx !== activeIndex) {
+    setActiveIndex(idx);
+  }
   const project = total > 0 ? projects[idx] : null;
 
   const dur = reduceMotion ? 0.12 : 0.55;

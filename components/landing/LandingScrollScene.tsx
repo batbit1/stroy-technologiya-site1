@@ -1,12 +1,16 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type CSSProperties } from "react";
 import { HeroContent } from "./HeroContent";
 import { HouseSequenceCanvas } from "./HouseSequenceCanvas";
 import { HouseStageFrame } from "./HouseStageFrame";
-import { SplitCinematicStory } from "./SplitCinematicStory";
+import {
+  MobileCinematicStoryScrollFlow,
+  SplitCinematicStory,
+} from "./SplitCinematicStory";
 import {
   DESKTOP_SEQUENCE_FRAMES,
+  MOBILE_LANDING_SCROLL_SPACER_VH,
   MOBILE_SEQUENCE_FRAMES,
   STORY_STEPS,
 } from "@/lib/landing-data";
@@ -22,8 +26,11 @@ import { useScrollFrame } from "@/hooks/useScrollFrame";
  * Замедление достигается ИМЕННО за счёт scroll height, а не за счёт растягивания
  * dissolve внутри главы — внутри глав стоит длинный стабильный HOLD.
  */
-const SCROLL_LENGTH_VH_MOBILE = 1250;
+const SCROLL_LENGTH_VH_MOBILE = MOBILE_LANDING_SCROLL_SPACER_VH;
 const SCROLL_LENGTH_VH_DESKTOP = 1450;
+
+/** Mobile cinematic: 1 hero + все story-сцены; высота секции в единицах экрана. */
+const MOBILE_SCENE_COUNT = 1 + STORY_STEPS.length;
 
 /**
  * Cinematic atmosphere — house остаётся читаемым, но больше не выбеливается:
@@ -74,6 +81,39 @@ function SceneAtmosphere() {
   );
 }
 
+/** Canvas + атмосфера + grain + mist. `breathing`: scale-pulse на обёртке sequence (только desktop). */
+function CinematicBackdropStack({
+  progress01,
+  breathing = true,
+}: {
+  progress01: number;
+  breathing?: boolean;
+}) {
+  return (
+    <>
+      <div
+        className={[
+          "absolute inset-0 z-0",
+          breathing ? "canvas-breathe" : "mobile-cinematic-canvas-root",
+        ].join(" ")}
+        aria-hidden
+      >
+        <HouseStageFrame>
+          <HouseSequenceCanvas
+            desktopFrames={DESKTOP_SEQUENCE_FRAMES}
+            mobileFrames={MOBILE_SEQUENCE_FRAMES}
+            progress01={progress01}
+            className="pointer-events-none"
+          />
+        </HouseStageFrame>
+      </div>
+      <SceneAtmosphere />
+      <div className="scene-grain-layer" aria-hidden />
+      <div className="cinematic-readability-mist" aria-hidden />
+    </>
+  );
+}
+
 export type LandingScrollSceneProps = {
   onGoPortfolio: () => void;
   onOpenRequestForm: () => void;
@@ -91,26 +131,18 @@ export function LandingScrollScene({
 
   useEffect(() => {
     if (process.env.NODE_ENV === "development") {
-      // Диагностика: подтверждение монтирования scroll-сцены (без спама на каждый кадр скролла).
       console.log("[LandingScrollScene] render");
     }
   }, []);
 
-  // Защита от undefined/NaN на первом рендере: progress = 0 → Hero активен.
   const progress01 = safeProgress01(scrollProgress);
   const heroData = SITE_CONTENT.hero;
 
-  // Hero = chapter 0, story = chapters 1..N. Главы равной длины.
   const totalChapters = STORY_STEPS.length + 1;
 
   const { chapterIndex: activeChapterIndex } =
     getChapterTiming(progress01, totalChapters);
 
-  // ONE-SCENE-AT-A-TIME: рендерится либо Hero, либо одна story-сцена.
-  // Между сценами никаких промежуточных opacity/blur состояний нет —
-  // активная глава всегда отрисована в финальном «чётком» виде, неактивные
-  // главы просто отсутствуют в DOM. Mount-time reveal (≈ 0.22–0.32 c.)
-  // отрабатывает каждый раз при смене activeChapterIndex (key remount).
   const heroIsActive = activeChapterIndex === 0;
 
   const activeStoryIndex = activeChapterIndex - 1;
@@ -119,70 +151,68 @@ export function LandingScrollScene({
     <div className="relative text-ink">
       <section
         ref={sceneSectionRef}
-        className="relative isolate"
+        className="landing-scroll-scene relative isolate"
         aria-label="Сцена прокрутки"
+        style={
+          {
+            ["--mobile-scene-count"]: String(MOBILE_SCENE_COUNT),
+          } as CSSProperties
+        }
       >
         {/*
-         * Sticky viewport + spacer: Hero + STORY_STEPS как равные главы единой timeline.
-         * Canvas получает progress01 без изменений и продолжает плавно строить дом
-         * на протяжении всего скролла, независимо от phase-based overlay.
+         * Desktop (lg+): без изменений — sticky viewport + scroll-спейсер.
          */}
+        <div className="hidden lg:block">
+          <div className="sticky top-0 z-[1] h-screen min-h-0 w-full overflow-hidden">
+            <CinematicBackdropStack progress01={progress01} />
 
-        <div className="sticky top-0 z-[1] h-screen min-h-0 w-full overflow-hidden">
-
-          <div className="absolute inset-0 z-0 canvas-breathe" aria-hidden>
-            <HouseStageFrame>
-              <HouseSequenceCanvas
-                desktopFrames={DESKTOP_SEQUENCE_FRAMES}
-                mobileFrames={MOBILE_SEQUENCE_FRAMES}
-                progress01={progress01}
-                className="pointer-events-none"
-              />
-            </HouseStageFrame>
-          </div>
-
-          <SceneAtmosphere />
-
-          <div className="scene-grain-layer" aria-hidden />
-
-          <div className="cinematic-readability-mist" aria-hidden />
-
-          {/*
-           * ONE-SCENE-AT-A-TIME: рендерится только активная глава.
-           * Hero рендерится исключительно при activeChapterIndex === 0
-           * (на progress01 = 0 виден сразу, без ожидания скролла).
-           * Story-сцена — при activeStoryIndex ≥ 0; SplitCinematicStory сам
-           * выбирает один STORY_STEPS[activeStoryIndex] и не мапит остальные.
-           * Никаких scroll-driven blur/opacity на оверлеях: смена сцен
-           * — это remount, а не fade.
-           */}
-          {heroIsActive ? (
-            <>
-              <HeroContent
-                variant="mobile"
-                data={heroData}
-                onGoPortfolio={onGoPortfolio}
-                onOpenRequestForm={onOpenRequestForm}
-              />
+            {heroIsActive ? (
               <HeroContent
                 variant="desktop"
                 data={heroData}
                 onGoPortfolio={onGoPortfolio}
                 onOpenRequestForm={onOpenRequestForm}
               />
-            </>
-          ) : null}
+            ) : null}
 
-          <SplitCinematicStory activeStoryIndex={activeStoryIndex} />
+            <SplitCinematicStory activeStoryIndex={activeStoryIndex} />
+          </div>
+
+          <div
+            className="h-[1250vh] md:h-[1450vh]"
+            aria-hidden
+            data-scroll-length-mobile={SCROLL_LENGTH_VH_MOBILE}
+            data-scroll-length-desktop={SCROLL_LENGTH_VH_DESKTOP}
+          />
         </div>
 
-        {/* Spacer: SCROLL_LENGTH_VH_MOBILE / SCROLL_LENGTH_VH_DESKTOP. */}
+        {/*
+         * Mobile: секция задаёт только высоту скролла; canvas — fixed вне потока; лента — Hero + STORY_STEPS.
+         */}
         <div
-          className="h-[1250vh] md:h-[1450vh]"
-          aria-hidden
-          data-scroll-length-mobile={SCROLL_LENGTH_VH_MOBILE}
-          data-scroll-length-desktop={SCROLL_LENGTH_VH_DESKTOP}
-        />
+          className="lg:hidden relative w-full overflow-visible"
+          style={{ minHeight: `calc(${MOBILE_SCENE_COUNT} * 100dvh)` }}
+        >
+          <div
+            className="cinematic-bg mobile-cinematic-bg house-sequence-layer house-sequence-canvas-wrapper pointer-events-none"
+            aria-hidden
+          >
+            <div className="mobile-cinematic-bg__stage">
+              <CinematicBackdropStack
+                progress01={progress01}
+                breathing={false}
+              />
+            </div>
+          </div>
+
+          <div className="mobile-story-flow">
+            <MobileCinematicStoryScrollFlow
+              heroData={heroData}
+              onGoPortfolio={onGoPortfolio}
+              onOpenRequestForm={onOpenRequestForm}
+            />
+          </div>
+        </div>
       </section>
     </div>
   );
