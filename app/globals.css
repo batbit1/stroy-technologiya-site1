@@ -1767,15 +1767,23 @@ body {
     box-sizing: border-box;
   }
 
-  .mobile-text-step {
-    box-sizing: border-box;
+  /* Ровный mobile cinematic-scroll: каждый шаг = один viewport; сумма = MOBILE_SCENE_COUNT * 100dvh. */
+  .mobile-story-step,
+  .mobile-text-step,
+  .mobile-cinematic-step {
+    box-sizing: border-box !important;
     width: 100%;
-    min-height: 100dvh;
-    height: auto !important;
-    overflow: visible !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    max-height: 100dvh !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    padding-top: calc(80px + env(safe-area-inset-top, 0px)) !important;
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 0px)) !important;
     background: transparent !important;
   }
 
@@ -1786,37 +1794,39 @@ body {
     min-height: calc(var(--mobile-scene-count, 7) * 100dvh);
   }
 
-  .mobile-cinematic-step,
-  .mobile-story-step {
-    box-sizing: border-box;
-    width: 100%;
-    min-height: 100dvh !important;
-    height: auto !important;
-    overflow: visible !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding-left: 16px;
-    padding-right: 16px;
-    padding-top: calc(80px + env(safe-area-inset-top, 0px));
-    padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
-    background: transparent !important;
-  }
-
+  .mobile-story-step__shell,
   .mobile-cinematic-step__shell,
-  .mobile-story-step__shell {
-    overflow: visible !important;
+  /* Выше блока .cinematic-story-scene.mx-auto… с max-height:none — задаём нужную специфичность под лентой. */
+  .landing-scroll-scene .mobile-story-flow .about-story-scene.about-scene-layout.cinematic-story-scene,
+  .landing-scroll-scene .mobile-story-flow .cinematic-story-scene.mx-auto.flex.flex-col {
+    box-sizing: border-box !important;
+    max-height: calc(100dvh - 92px) !important;
+    overflow: hidden !important;
+    min-height: 0 !important;
   }
 
   .mobile-cinematic-step__shell {
     display: flex;
-    min-height: 0;
+    flex-direction: column;
     width: 100%;
     max-width: min(1600px, 100%);
     min-width: 0;
     align-items: center;
     justify-content: center;
     pointer-events: auto;
+    flex: 1 1 auto;
+  }
+
+  .mobile-story-step__shell {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: min(1600px, 100%);
+    min-width: 0;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+    flex: 1 1 auto;
   }
 
   .mobile-hero-step .hero-content,
@@ -1827,31 +1837,29 @@ body {
     transform: none !important;
     filter: none !important;
     will-change: auto !important;
+    flex: 1 1 auto;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    overflow: hidden !important;
   }
 
-  .mobile-story-step__shell {
-    display: flex;
-    min-height: 0;
-    width: 100%;
-    max-width: min(1600px, 100%);
-    align-items: center;
-    justify-content: center;
-    pointer-events: auto;
-    overflow: visible !important;
+  .landing-scroll-scene .mobile-story-flow .story-scene-copy-col,
+  .landing-scroll-scene .mobile-story-flow .about-proof-column {
+    min-height: 0 !important;
+    overflow: hidden !important;
+    max-height: 100% !important;
   }
 
   .mobile-story-step .about-story-scene,
   .mobile-story-step .cinematic-story-scene {
     position: relative !important;
     inset: auto !important;
-    height: auto !important;
-    max-height: none !important;
-    min-height: 0 !important;
     opacity: 1 !important;
     transform: none !important;
     filter: none !important;
     will-change: auto !important;
-    overflow: visible !important;
+    flex: 1 1 auto;
+    justify-content: center !important;
   }
 
   /* Внешний step уже даёт отступ под header — не дублируем padding у inner scene. */
@@ -1861,25 +1869,61 @@ body {
     padding-bottom: 0 !important;
   }
 
-  /* Нет внутреннего scroll в карточках — только скролл страницы. */
-  .mobile-story-step .story-scene-copy-col,
-  .mobile-story-step .about-proof-column {
-    overflow: visible !important;
-    max-height: none !important;
+  .landing-scroll-scene .mobile-story-flow .about-copy,
+  .landing-scroll-scene .mobile-story-flow .scene-copy-stack,
+  .landing-scroll-scene .mobile-story-flow .scene-copy,
+  .landing-scroll-scene .mobile-story-flow .scene-copy-description,
+  .landing-scroll-scene .mobile-story-flow .scene-copy-notes,
+  .landing-scroll-scene .mobile-story-flow .about-proof-card {
+    overflow: hidden !important;
   }
 
-  .mobile-story-step .about-proof-card,
-  .mobile-story-step .about-copy,
-  .mobile-story-step .scene-copy-stack,
-  .mobile-story-step .scene-copy,
-  .mobile-story-step .scene-copy-description,
-  .mobile-story-step .scene-copy-notes,
-  .cinematic-story-scene .about-copy,
-  .cinematic-story-scene .scene-copy-stack,
-  .cinematic-story-scene .scene-copy-description,
-  .cinematic-story-scene .about-proof-card {
-    overflow: visible !important;
-    max-height: none !important;
+  .landing-scroll-scene .mobile-story-flow .cinematic-story-scene.mx-auto.flex.flex-col,
+  .landing-scroll-scene .mobile-story-flow .about-story-scene.about-scene-layout.cinematic-story-scene {
+    gap: clamp(11px, 3vw, 16px) !important;
+    justify-content: center !important;
+  }
+
+  .landing-scroll-scene .mobile-story-flow .cinematic-story-scene .premium-engraved-title {
+    font-size: clamp(1.82rem, 8.35vw, 2.92rem) !important;
+    line-height: 0.94 !important;
+  }
+
+  .landing-scroll-scene .mobile-story-flow .premium-engraved-title-wrap {
+    margin-bottom: clamp(12px, 3.2vw, 18px) !important;
+  }
+
+  .landing-scroll-scene .mobile-story-flow .cinematic-story-scene .scene-copy-eyebrow-row {
+    margin-bottom: clamp(11px, 3vw, 15px) !important;
+  }
+
+  .landing-scroll-scene .mobile-story-flow .cinematic-story-scene .scene-copy-description {
+    font-size: clamp(12.75px, 3.72vw, 14.75px) !important;
+    line-height: 1.5 !important;
+  }
+
+  .landing-scroll-scene .mobile-story-flow .hero-copy {
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .landing-scroll-scene .mobile-story-flow .hero-body-lede {
+    font-size: clamp(13px, 3.8vw, 15px);
+    line-height: 1.48;
+    margin-bottom: 0 !important;
+  }
+
+  .landing-scroll-scene .mobile-story-flow .hero-buttons--mobile {
+    gap: 10px !important;
+    margin-top: 14px !important;
+  }
+
+  .landing-scroll-scene .mobile-story-flow .scene-copy-premium-cta.premium-cta-button--primary {
+    height: 44px !important;
+    min-height: 42px !important;
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+    margin-top: clamp(10px, 2.8vw, 14px) !important;
   }
 
   .mobile-story-step .about-copy::-webkit-scrollbar,
