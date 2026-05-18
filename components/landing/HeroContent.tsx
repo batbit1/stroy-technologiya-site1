@@ -102,12 +102,25 @@ function HeroCoverEyebrow({
   reduceFx,
   delay,
   className,
+  scrollFlowStatic = false,
 }: {
   narrow: boolean;
   reduceFx: boolean;
   delay: number;
   className: string;
+  /** Mobile scroll-лента: без motion-обёртки (нет deferred paint от Framer). */
+  scrollFlowStatic?: boolean;
 }) {
+  if (scrollFlowStatic) {
+    return (
+      <p
+        className={`cinematic-text-render pointer-events-none m-0 max-w-[620px] ${className}`}
+      >
+        {HERO_COVER_EYEBROW}
+      </p>
+    );
+  }
+
   const enter = reduceFx
     ? { opacity: 1, y: 0, filter: "blur(0px)" }
     : narrow
@@ -338,6 +351,7 @@ function HeroMobile({
           narrow
           reduceFx={soft}
           delay={0}
+          scrollFlowStatic={scrollFlowLayout}
           className="font-sans text-[0.72rem] font-bold uppercase leading-snug tracking-[0.24em] text-[rgba(23,23,23,0.46)]"
         />
       </div>
@@ -352,42 +366,62 @@ function HeroMobile({
         className="premium-engraved-title hero-cinematic-title hero-title-measure cinematic-text-render font-display"
       />
 
-      <motion.p
-        initial={enterSub}
-        animate={aliveSub}
-        transition={{
-          duration: scrollFlowLayout ? 0 : soft ? 0.12 : CINEMATIC_TEXT_ENTER_S,
-          ease: EASE_PREMIUM,
-          delay: scrollFlowLayout || soft ? 0 : 0.08,
-        }}
-        className="hero-body-lede font-sans"
-      >
-        {data.subheadline}
-      </motion.p>
-
-      <motion.div
-        initial={enterSub}
-        animate={aliveSub}
-        transition={{
-          duration: scrollFlowLayout ? 0 : soft ? 0.12 : CINEMATIC_TEXT_ENTER_S,
-          ease: EASE_PREMIUM,
-          delay: scrollFlowLayout || soft ? 0 : 0.14,
-        }}
-        className="hero-buttons hero-buttons--mobile"
-        style={{ pointerEvents: "auto" }}
-      >
-        <HeroPremiumButton fullWidthMobile onClick={onOpenRequestForm}>
-          {data.ctaPrimary}
-        </HeroPremiumButton>
-
-        <HeroSecondaryLink
-          centeredMobile
-          className="hero-secondary-cta"
-          onClick={onGoPortfolio}
+      {scrollFlowLayout ? (
+        <p className="hero-body-lede font-sans">{data.subheadline}</p>
+      ) : (
+        <motion.p
+          initial={enterSub}
+          animate={aliveSub}
+          transition={{
+            duration: soft ? 0.12 : CINEMATIC_TEXT_ENTER_S,
+            ease: EASE_PREMIUM,
+            delay: soft ? 0 : 0.08,
+          }}
+          className="hero-body-lede font-sans"
         >
-          {data.ctaSecondary}
-        </HeroSecondaryLink>
-      </motion.div>
+          {data.subheadline}
+        </motion.p>
+      )}
+
+      {scrollFlowLayout ? (
+        <div className="hero-buttons hero-buttons--mobile" style={{ pointerEvents: "auto" }}>
+          <HeroPremiumButton fullWidthMobile onClick={onOpenRequestForm}>
+            {data.ctaPrimary}
+          </HeroPremiumButton>
+
+          <HeroSecondaryLink
+            centeredMobile
+            className="hero-secondary-cta"
+            onClick={onGoPortfolio}
+          >
+            {data.ctaSecondary}
+          </HeroSecondaryLink>
+        </div>
+      ) : (
+        <motion.div
+          initial={enterSub}
+          animate={aliveSub}
+          transition={{
+            duration: soft ? 0.12 : CINEMATIC_TEXT_ENTER_S,
+            ease: EASE_PREMIUM,
+            delay: soft ? 0 : 0.14,
+          }}
+          className="hero-buttons hero-buttons--mobile"
+          style={{ pointerEvents: "auto" }}
+        >
+          <HeroPremiumButton fullWidthMobile onClick={onOpenRequestForm}>
+            {data.ctaPrimary}
+          </HeroPremiumButton>
+
+          <HeroSecondaryLink
+            centeredMobile
+            className="hero-secondary-cta"
+            onClick={onGoPortfolio}
+          >
+            {data.ctaSecondary}
+          </HeroSecondaryLink>
+        </motion.div>
+      )}
     </div>
   );
 

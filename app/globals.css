@@ -4167,3 +4167,32 @@ body {
     transform: none !important;
   }
 }
+
+/* ── Mobile story scroll-flow: финальная страховка — статичное отображение, без defer paint ── */
+@media (max-width: 1023px) {
+  .mobile-story-flow,
+  .mobile-cinematic-flow,
+  .mobile-story-step,
+  .mobile-text-step,
+  .mobile-cinematic-step,
+  .mobile-story-step__shell,
+  .mobile-cinematic-step__shell,
+  .about-story-scene,
+  .cinematic-story-scene,
+  .about-copy,
+  .scene-copy,
+  .scene-copy-description,
+  .story-scene-copy-col,
+  .about-proof-card,
+  .about-proof-column {
+    opacity: 1 !important;
+    visibility: visible !important;
+    content-visibility: visible !important;
+    contain: none !important;
+    contain-intrinsic-size: auto !important;
+    animation: none !important;
+    transition: none !important;
+    transition-delay: 0s !important;
+    filter: none !important;
+  }
+}

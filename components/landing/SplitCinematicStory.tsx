@@ -20,12 +20,6 @@ import { CinematicEyebrow, CinematicTitle } from "./CinematicTitle";
 
 const EASE_PREMIUM: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
-/** Mobile cinematic лента (`scrollFlow`): без «догоняющего» blur/y после инерционного скролла. */
-const SCROLL_FLOW_MOTION_TRANSITION: Transition = {
-  duration: 0,
-  ease: EASE_PREMIUM,
-};
-
 /**
  * Z-index активной story-сцены. В one-scene-at-a-time модели одновременно
  * рендерится только одна сцена — статичного значения достаточно, чтобы быть
@@ -102,24 +96,35 @@ function ProofListColumn({
       aria-label="Преимущества и надёжность"
     >
       <div className="about-proof-card-outer">
+        {scrollFlow ? (
+          <div className="about-proof-card">
+            <div className="about-proof-card-header">{cardHeader}</div>
+            <ul className="about-proof-list">
+              {items.map((fp, i) => (
+                <li
+                  key={`${storyIndex}-proof-${i}-${fp.title}`}
+                  className="about-proof-item"
+                >
+                  <div className="about-proof-item-title">{fp.title}</div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
         <motion.div
           className="about-proof-card"
           initial={
-            scrollFlow
-              ? false
-              : reduceFx
-                ? { opacity: 0 }
-                : { opacity: 0, x: 32, filter: "blur(10px)" }
+            reduceFx
+              ? { opacity: 0 }
+              : { opacity: 0, x: 32, filter: "blur(10px)" }
           }
           animate={
-            scrollFlow
-              ? { opacity: 1, x: 0, filter: "blur(0px)" }
-              : reduceFx
-                ? { opacity: 1 }
-                : { opacity: 1, x: 0, filter: "blur(0px)" }
+            reduceFx
+              ? { opacity: 1 }
+              : { opacity: 1, x: 0, filter: "blur(0px)" }
           }
           transition={{
-            duration: scrollFlow ? 0 : reduceFx ? 0.12 : CARD_ENTER_S,
+            duration: reduceFx ? 0.12 : CARD_ENTER_S,
             ease: EASE_PREMIUM,
           }}
         >
@@ -130,18 +135,15 @@ function ProofListColumn({
               key={`${storyIndex}-proof-${i}-${fp.title}`}
               className="about-proof-item"
               initial={
-                scrollFlow
-                  ? false
-                  : reduceFx
-                    ? { opacity: 0 }
-                    : { opacity: 0, y: 8 }
+                reduceFx
+                  ? { opacity: 0 }
+                  : { opacity: 0, y: 8 }
               }
               animate={{ opacity: 1, y: 0 }}
               transition={{
-                duration: scrollFlow ? 0 : reduceFx ? 0.1 : 0.38,
+                duration: reduceFx ? 0.1 : 0.38,
                 ease: EASE_PREMIUM,
-                delay:
-                  scrollFlow || reduceFx ? 0 : itemBaseDelay + i * itemStagger,
+                delay: reduceFx ? 0 : itemBaseDelay + i * itemStagger,
               }}
             >
               <div className="about-proof-item-title">{fp.title}</div>
@@ -149,6 +151,7 @@ function ProofListColumn({
           ))}
         </ul>
       </motion.div>
+        )}
       </div>
     </div>
   );
@@ -320,7 +323,7 @@ function SceneVisualBlueprint() {
   );
 }
 
-function SceneVisualFoundation() {
+function SceneVisualFoundation({ scrollFlow = false }: { scrollFlow?: boolean }) {
   return (
     <div className="split-visual-card relative min-h-[168px] overflow-hidden p-4 lg:min-h-[198px] lg:p-5">
       {hudGridBg("opacity-[0.22]")}
@@ -347,6 +350,13 @@ function SceneVisualFoundation() {
           </div>
         ))}
         <div className="mt-4 h-px w-full overflow-hidden rounded-full bg-[rgba(41,37,32,0.08)]">
+          {scrollFlow ? (
+            <div
+              className="h-full w-full origin-left scale-x-100 rounded-full"
+              style={{ backgroundColor: BRONZE_SOFT }}
+              aria-hidden
+            />
+          ) : (
           <motion.div
             className="h-full w-full origin-left rounded-full"
             style={{ backgroundColor: BRONZE_SOFT }}
@@ -354,6 +364,7 @@ function SceneVisualFoundation() {
             animate={{ scaleX: 1 }}
                 transition={{ duration: 1, ease: EASE_PREMIUM }}
           />
+          )}
         </div>
       </div>
     </div>
@@ -489,12 +500,18 @@ function SceneVisualDocumentKit() {
   );
 }
 
-function SceneVisual({ type }: { type: StoryVisualType }) {
+function SceneVisual({
+  type,
+  scrollFlow = false,
+}: {
+  type: StoryVisualType;
+  scrollFlow?: boolean;
+}) {
   switch (type) {
     case "proofCard":
       return null;
     case "foundation":
-      return <SceneVisualFoundation />;
+      return <SceneVisualFoundation scrollFlow={scrollFlow} />;
     case "structure":
       return <SceneVisualStructure />;
     case "envelope":
@@ -564,23 +581,11 @@ function SceneCopy({
 }) {
   const openRequestForm = useNavScrollOpenRequestForm();
   const softFx = reduceFx || scrollFlow;
-  const cm = scrollFlow
-    ? {
-        initial: false as const,
-        animate: { opacity: 1, y: 0, filter: "blur(0px)" },
-        transition: SCROLL_FLOW_MOTION_TRANSITION,
-      }
-    : copyMotionProps(narrow, reduceFx);
+  const cm = copyMotionProps(narrow, reduceFx);
   const bullets = step.bullets ?? [];
   const featurePoints = step.featurePoints ?? [];
   const stats = step.stats ?? [];
-  const blm = scrollFlow
-    ? {
-        initial: false as const,
-        animate: { opacity: 1, y: 0 },
-        transition: SCROLL_FLOW_MOTION_TRANSITION,
-      }
-    : bulletListMotionProps(narrow, reduceFx);
+  const blm = bulletListMotionProps(narrow, reduceFx);
   const hasSupplementaryList =
     bullets.length > 0 || (featurePoints.length > 0 && !proofListLayout);
 
@@ -628,13 +633,22 @@ function SceneCopy({
         .filter(Boolean)
         .join(" ");
 
-  return (
-    <motion.div
-      className={copyShellClass}
-      initial={cm.initial}
-      animate={cm.animate}
-      transition={cm.transition}
-    >
+  const fpNotesClassName = [
+    "scene-copy-notes w-full max-w-[min(560px,100%)] list-none",
+    scrollFlow ? "mx-auto text-center" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const bulletNotesClassName = [
+    "scene-copy-notes w-full max-w-[min(560px,100%)] list-none",
+    scrollFlow ? "mx-auto" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const sceneCopyInterior = (
+    <>
       <div className="scene-copy-readability-glow" aria-hidden />
       <div
         className={[
@@ -716,67 +730,103 @@ function SceneCopy({
         ) : null}
 
         {featurePoints.length > 0 && !proofListLayout ? (
-          <motion.ul
-            className={[
-              "scene-copy-notes w-full max-w-[min(560px,100%)] list-none",
-              scrollFlow ? "mx-auto text-center" : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            initial={blm.initial}
-            animate={blm.animate}
-            transition={blm.transition}
-            aria-label="Преимущества"
-          >
-            {featurePoints.map((fp, bi) => (
-              <li
-                key={`${index}-fp-${bi}`}
-                className={`scene-copy-feature-row border-b py-[13px] last:border-b-0 last:pb-0 first:pt-0 ${scrollFlow ? "mobile-luxury-list-row border-[rgba(34,30,26,0.05)] text-center" : "border-[rgba(34,30,26,0.08)] text-left"}`}
-              >
-                <div
-                  className={`min-w-0 font-sans font-semibold text-[rgba(26,22,18,0.88)] [font-size:clamp(13px,0.88vw,16px)] [line-height:1.38] ${scrollFlow ? "mx-auto max-w-[min(560px,100%)] text-center" : "text-left"}`}
+          scrollFlow ? (
+            <ul
+              className={fpNotesClassName}
+              aria-label="Преимущества"
+            >
+              {featurePoints.map((fp, bi) => (
+                <li
+                  key={`${index}-fp-${bi}`}
+                  className={`scene-copy-feature-row border-b py-[13px] last:border-b-0 last:pb-0 first:pt-0 mobile-luxury-list-row border-[rgba(34,30,26,0.05)] text-center`}
                 >
-                  {fp.title}
-                </div>
-                <p
-                  className={`pointer-events-none m-0 mt-2 max-w-[560px] font-sans font-normal text-[rgba(26,22,18,0.62)] [font-size:clamp(13px,0.84vw,15px)] [line-height:1.66] ${scrollFlow ? "mx-auto text-center" : "text-left"}`}
+                  <div
+                    className={`min-w-0 font-sans font-semibold text-[rgba(26,22,18,0.88)] [font-size:clamp(13px,0.88vw,16px)] [line-height:1.38] mx-auto max-w-[min(560px,100%)] text-center`}
+                  >
+                    {fp.title}
+                  </div>
+                  <p
+                    className={`pointer-events-none m-0 mt-2 max-w-[560px] font-sans font-normal text-[rgba(26,22,18,0.62)] [font-size:clamp(13px,0.84vw,15px)] [line-height:1.66] mx-auto text-center`}
+                  >
+                    {fp.description}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <motion.ul
+              className={fpNotesClassName}
+              initial={blm.initial}
+              animate={blm.animate}
+              transition={blm.transition}
+              aria-label="Преимущества"
+            >
+              {featurePoints.map((fp, bi) => (
+                <li
+                  key={`${index}-fp-${bi}`}
+                  className="scene-copy-feature-row border-b border-[rgba(34,30,26,0.08)] py-[13px] text-left last:border-b-0 last:pb-0 first:pt-0"
                 >
-                  {fp.description}
-                </p>
-              </li>
-            ))}
-          </motion.ul>
+                  <div
+                    className="min-w-0 text-left font-sans font-semibold text-[rgba(26,22,18,0.88)] [font-size:clamp(13px,0.88vw,16px)] [line-height:1.38]"
+                  >
+                    {fp.title}
+                  </div>
+                  <p
+                    className="pointer-events-none m-0 mt-2 max-w-[560px] text-left font-sans font-normal text-[rgba(26,22,18,0.62)] [font-size:clamp(13px,0.84vw,15px)] [line-height:1.66]"
+                  >
+                    {fp.description}
+                  </p>
+                </li>
+              ))}
+            </motion.ul>
+          )
         ) : null}
 
         {featurePoints.length === 0 && bullets.length > 0 ? (
-          <motion.ul
-            className={[
-              "scene-copy-notes w-full max-w-[min(560px,100%)] list-none",
-              scrollFlow ? "mx-auto" : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            initial={blm.initial}
-            animate={blm.animate}
-            transition={blm.transition}
-            aria-label="Ключевые пункты"
-          >
-            {bullets.map((bullet, bi) => (
-              <li
-                key={`${index}-${bi}`}
-                className="scene-copy-note-row"
-              >
-                <span className="scene-copy-note-index font-sans tabular-nums">
-                  {String(bi + 1).padStart(2, "0")}
-                </span>
-                <span
-                  className={`scene-copy-bullet-text min-w-0 font-sans ${scrollFlow ? "text-center" : "text-left"}`}
+          scrollFlow ? (
+            <ul
+              className={bulletNotesClassName}
+              aria-label="Ключевые пункты"
+            >
+              {bullets.map((bullet, bi) => (
+                <li
+                  key={`${index}-${bi}`}
+                  className="scene-copy-note-row"
                 >
-                  {bullet}
-                </span>
-              </li>
-            ))}
-          </motion.ul>
+                  <span className="scene-copy-note-index font-sans tabular-nums">
+                    {String(bi + 1).padStart(2, "0")}
+                  </span>
+                  <span
+                    className={`scene-copy-bullet-text min-w-0 font-sans text-center`}
+                  >
+                    {bullet}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <motion.ul
+              className={bulletNotesClassName}
+              initial={blm.initial}
+              animate={blm.animate}
+              transition={blm.transition}
+              aria-label="Ключевые пункты"
+            >
+              {bullets.map((bullet, bi) => (
+                <li
+                  key={`${index}-${bi}`}
+                  className="scene-copy-note-row"
+                >
+                  <span className="scene-copy-note-index font-sans tabular-nums">
+                    {String(bi + 1).padStart(2, "0")}
+                  </span>
+                  <span className="scene-copy-bullet-text min-w-0 text-left font-sans">
+                    {bullet}
+                  </span>
+                </li>
+              ))}
+            </motion.ul>
+          )
         ) : null}
 
         {hasSupplementaryList ? (
@@ -865,6 +915,19 @@ function SceneCopy({
           </div>
         ) : null}
       </div>
+    </>
+  );
+
+  return scrollFlow ? (
+    <div className={copyShellClass}>{sceneCopyInterior}</div>
+  ) : (
+    <motion.div
+      className={copyShellClass}
+      initial={cm.initial}
+      animate={cm.animate}
+      transition={cm.transition}
+    >
+      {sceneCopyInterior}
     </motion.div>
   );
 }
@@ -881,19 +944,25 @@ function SceneVisualFrame({
   scrollFlow?: boolean;
 }) {
   const vm = visualMotionProps(narrow, reduceFx);
+  const shellClass =
+    "min-w-0 w-full max-w-[400px] lg:justify-self-end lg:self-center";
+  const shellStyle = { transformOrigin: narrow ? "50% 100%" : "90% 50%" } as const;
+
+  if (scrollFlow) {
+    return (
+      <div className={shellClass} style={shellStyle}>
+        <SceneVisual type={type} scrollFlow />
+      </div>
+    );
+  }
+
   return (
     <motion.div
-      className="min-w-0 w-full max-w-[400px] lg:justify-self-end lg:self-center"
-      style={{ transformOrigin: narrow ? "50% 100%" : "90% 50%" }}
-      initial={scrollFlow ? false : vm.initial}
-      animate={
-        scrollFlow
-          ? { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }
-          : vm.animate
-      }
-      transition={
-        scrollFlow ? SCROLL_FLOW_MOTION_TRANSITION : vm.transition
-      }
+      className={shellClass}
+      style={shellStyle}
+      initial={vm.initial}
+      animate={vm.animate}
+      transition={vm.transition}
     >
       <SceneVisual type={type} />
     </motion.div>
