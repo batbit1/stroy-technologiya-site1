@@ -22,7 +22,7 @@ const EASE_PREMIUM: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 /** Mobile cinematic лента (`scrollFlow`): без «догоняющего» blur/y после инерционного скролла. */
 const SCROLL_FLOW_MOTION_TRANSITION: Transition = {
-  duration: 0.01,
+  duration: 0,
   ease: EASE_PREMIUM,
 };
 
@@ -119,7 +119,7 @@ function ProofListColumn({
                 : { opacity: 1, x: 0, filter: "blur(0px)" }
           }
           transition={{
-            duration: scrollFlow ? 0.01 : reduceFx ? 0.12 : CARD_ENTER_S,
+            duration: scrollFlow ? 0 : reduceFx ? 0.12 : CARD_ENTER_S,
             ease: EASE_PREMIUM,
           }}
         >
@@ -138,7 +138,7 @@ function ProofListColumn({
               }
               animate={{ opacity: 1, y: 0 }}
               transition={{
-                duration: scrollFlow ? 0.01 : reduceFx ? 0.1 : 0.38,
+                duration: scrollFlow ? 0 : reduceFx ? 0.1 : 0.38,
                 ease: EASE_PREMIUM,
                 delay:
                   scrollFlow || reduceFx ? 0 : itemBaseDelay + i * itemStagger,

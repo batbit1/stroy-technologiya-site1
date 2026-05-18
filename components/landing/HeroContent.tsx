@@ -344,7 +344,7 @@ function HeroMobile({
         initial={enterSub}
         animate={aliveSub}
         transition={{
-          duration: scrollFlowLayout ? 0.01 : soft ? 0.12 : CINEMATIC_TEXT_ENTER_S,
+          duration: scrollFlowLayout ? 0 : soft ? 0.12 : CINEMATIC_TEXT_ENTER_S,
           ease: EASE_PREMIUM,
           delay: scrollFlowLayout || soft ? 0 : 0.08,
         }}
@@ -357,7 +357,7 @@ function HeroMobile({
         initial={enterSub}
         animate={aliveSub}
         transition={{
-          duration: scrollFlowLayout ? 0.01 : soft ? 0.12 : CINEMATIC_TEXT_ENTER_S,
+          duration: scrollFlowLayout ? 0 : soft ? 0.12 : CINEMATIC_TEXT_ENTER_S,
           ease: EASE_PREMIUM,
           delay: scrollFlowLayout || soft ? 0 : 0.14,
         }}

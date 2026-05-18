@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type CSSProperties } from "react";
+import { useEffect, useRef } from "react";
 import { HeroContent } from "./HeroContent";
 import { HouseSequenceCanvas } from "./HouseSequenceCanvas";
 import { HouseStageFrame } from "./HouseStageFrame";
@@ -28,9 +28,6 @@ import { useScrollFrame } from "@/hooks/useScrollFrame";
  */
 const SCROLL_LENGTH_VH_MOBILE = MOBILE_LANDING_SCROLL_SPACER_VH;
 const SCROLL_LENGTH_VH_DESKTOP = 1450;
-
-/** Mobile cinematic: 1 hero + все story-сцены; высота секции в единицах экрана. */
-const MOBILE_SCENE_COUNT = 1 + STORY_STEPS.length;
 
 /**
  * Cinematic atmosphere — house остаётся читаемым, но больше не выбеливается:
@@ -153,11 +150,6 @@ export function LandingScrollScene({
         ref={sceneSectionRef}
         className="landing-scroll-scene relative isolate"
         aria-label="Сцена прокрутки"
-        style={
-          {
-            ["--mobile-scene-count"]: String(MOBILE_SCENE_COUNT),
-          } as CSSProperties
-        }
       >
         {/*
          * Desktop (lg+): без изменений — sticky viewport + scroll-спейсер.
@@ -187,12 +179,9 @@ export function LandingScrollScene({
         </div>
 
         {/*
-         * Mobile: секция задаёт только высоту скролла; canvas — fixed вне потока; лента — Hero + STORY_STEPS.
+         * Mobile: высота секции по контенту; canvas — fixed; лента — Hero + story (нативный скролл).
          */}
-        <div
-          className="lg:hidden relative w-full overflow-visible"
-          style={{ minHeight: `calc(${MOBILE_SCENE_COUNT} * 100dvh)` }}
-        >
+        <div className="lg:hidden relative w-full overflow-visible">
           <div
             className="cinematic-bg mobile-cinematic-bg house-sequence-layer house-sequence-canvas-wrapper pointer-events-none"
             aria-hidden
