@@ -2341,6 +2341,7 @@ body {
     width: 100% !important;
   }
 
+  /* Лёгкий туман: меньший слой и blur 36–48px + мягкий gradient (меньше нагрузка на GPU) */
   .mobile-cinematic-flow .mobile-luxury-mist-host::before {
     content: "";
     position: absolute;
@@ -2352,27 +2353,24 @@ body {
     box-shadow: none !important;
 
     left: 50%;
-    /* Чуть ниже центра: больше «облака» под лидом и кнопками */
     top: 49%;
     transform: translate(-50%, -50%);
 
-    /* Шире текстового блока (~220%), выше на +140–200px к высоте колонки */
-    width: 220%;
-    height: max(calc(100% + 240px), 88vh);
+    width: 158%;
+    height: max(calc(100% + 112px), min(56vh, 480px));
 
     border-radius: 999px;
     background: radial-gradient(
-      ellipse 56% 52% at 50% 47%,
-      rgba(252, 249, 242, 0.97) 0%,
-      rgba(250, 246, 238, 0.9) 12%,
-      rgba(250, 246, 238, 0.78) 28%,
-      rgba(250, 246, 238, 0.52) 50%,
-      rgba(250, 246, 238, 0.22) 70%,
-      rgba(250, 246, 238, 0.05) 86%,
-      rgba(250, 246, 238, 0) 100%
+      ellipse 50% 46% at 50% 47%,
+      rgba(252, 249, 242, 0.95) 0%,
+      rgba(251, 247, 240, 0.78) 18%,
+      rgba(249, 244, 236, 0.48) 42%,
+      rgba(246, 240, 230, 0.2) 68%,
+      rgba(246, 240, 230, 0.05) 86%,
+      rgba(246, 240, 230, 0) 100%
     );
-    filter: blur(88px);
-    -webkit-filter: blur(88px);
+    filter: blur(40px);
+    -webkit-filter: blur(40px);
   }
 
   .mobile-cinematic-flow .mobile-luxury-mist-host .hero-readability-glow,
@@ -2603,26 +2601,35 @@ body {
   }
 
   /*
-   * Мобильная story-лента: страховка от «пустых» блоков при быстром скролле
-   * (framer-motion interim opacity/blur). Transform не сбрасываем — не ломаем layout.
+   * Мобильная story-лента: только основные контейнеры — без универсального *,
+   * чтобы не форсировать filter/transition на каждом узле при скролле.
    */
   .mobile-story-flow,
-  .mobile-cinematic-flow {
-    content-visibility: visible !important;
-    contain-intrinsic-size: auto !important;
-  }
-
-  .mobile-story-flow *,
-  .mobile-cinematic-flow *,
-  .mobile-story-step *,
-  .mobile-text-step *,
-  .mobile-cinematic-step * {
+  .mobile-cinematic-flow,
+  .mobile-story-step,
+  .mobile-text-step,
+  .mobile-cinematic-step,
+  .mobile-story-step__shell,
+  .mobile-cinematic-step__shell,
+  .mobile-story-flow .about-story-scene,
+  .mobile-story-flow .cinematic-story-scene,
+  .mobile-cinematic-flow .about-story-scene,
+  .mobile-cinematic-flow .cinematic-story-scene,
+  .mobile-story-flow .about-copy,
+  .mobile-story-flow .scene-copy-description,
+  .mobile-story-flow .story-scene-copy-col,
+  .mobile-story-flow .about-proof-card,
+  .mobile-story-flow .about-proof-column,
+  .mobile-cinematic-flow .about-copy,
+  .mobile-cinematic-flow .scene-copy-description,
+  .mobile-cinematic-flow .story-scene-copy-col,
+  .mobile-cinematic-flow .about-proof-card,
+  .mobile-cinematic-flow .about-proof-column {
     opacity: 1 !important;
     visibility: visible !important;
-    filter: none !important;
-    animation: none !important;
-    transition: opacity 0s linear, transform 0s linear, filter 0s linear, color 0s linear !important;
-    transition-delay: 0s !important;
+    content-visibility: visible !important;
+    contain: none !important;
+    contain-intrinsic-size: auto !important;
   }
 
   .mobile-story-flow canvas,
@@ -2630,8 +2637,6 @@ body {
   .mobile-story-step canvas,
   .mobile-cinematic-step canvas {
     opacity: 1 !important;
-    filter: none !important;
-    transition: none !important;
   }
 }
 
@@ -4168,7 +4173,7 @@ body {
   }
 }
 
-/* ── Mobile story scroll-flow: финальная страховка — статичное отображение, без defer paint ── */
+/* ── Mobile story scroll-flow: финальное подтверждение контейнеров без * и без mass filter ── */
 @media (max-width: 1023px) {
   .mobile-story-flow,
   .mobile-cinematic-flow,
@@ -4177,22 +4182,24 @@ body {
   .mobile-cinematic-step,
   .mobile-story-step__shell,
   .mobile-cinematic-step__shell,
-  .about-story-scene,
-  .cinematic-story-scene,
-  .about-copy,
-  .scene-copy,
-  .scene-copy-description,
-  .story-scene-copy-col,
-  .about-proof-card,
-  .about-proof-column {
+  .mobile-story-flow .about-story-scene,
+  .mobile-story-flow .cinematic-story-scene,
+  .mobile-cinematic-flow .about-story-scene,
+  .mobile-cinematic-flow .cinematic-story-scene,
+  .mobile-story-flow .about-copy,
+  .mobile-story-flow .scene-copy-description,
+  .mobile-story-flow .story-scene-copy-col,
+  .mobile-story-flow .about-proof-card,
+  .mobile-story-flow .about-proof-column,
+  .mobile-cinematic-flow .about-copy,
+  .mobile-cinematic-flow .scene-copy-description,
+  .mobile-cinematic-flow .story-scene-copy-col,
+  .mobile-cinematic-flow .about-proof-card,
+  .mobile-cinematic-flow .about-proof-column {
     opacity: 1 !important;
     visibility: visible !important;
     content-visibility: visible !important;
     contain: none !important;
     contain-intrinsic-size: auto !important;
-    animation: none !important;
-    transition: none !important;
-    transition-delay: 0s !important;
-    filter: none !important;
   }
 }
