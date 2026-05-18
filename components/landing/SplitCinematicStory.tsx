@@ -1090,15 +1090,14 @@ export type MobileCinematicStoryScrollFlowProps = {
 /**
  * Mobile: первый экран — Hero, далее STORY_STEPS; весь блок скроллится поверх fixed-фона.
  */
+/** Мобильная вертикальная лента: без отложенного motion-reveal (стабильно при fast scroll). */
+const MOBILE_SCROLL_FLOW_REDUCE_MOTION = true as const;
+
 export function MobileCinematicStoryScrollFlow({
   heroData,
   onGoPortfolio,
   onOpenRequestForm,
 }: MobileCinematicStoryScrollFlowProps) {
-  const mqReduce = useMediaQuery("(prefers-reduced-motion: reduce)");
-  const fmReduce = useReducedMotion();
-  const reduceFx = Boolean(mqReduce || fmReduce);
-
   return (
     <div className="mobile-cinematic-flow pointer-events-auto w-full">
       <section
@@ -1112,6 +1111,7 @@ export function MobileCinematicStoryScrollFlow({
             onGoPortfolio={onGoPortfolio}
             onOpenRequestForm={onOpenRequestForm}
             scrollFlowLayout
+            instantMotion
           />
         </div>
       </section>
@@ -1121,7 +1121,7 @@ export function MobileCinematicStoryScrollFlow({
           step={step}
           index={index}
           narrow
-          reduceFx={reduceFx}
+          reduceFx={MOBILE_SCROLL_FLOW_REDUCE_MOTION}
           scrollFlow
         />
       ))}

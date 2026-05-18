@@ -22,6 +22,11 @@ export type HeroContentProps = {
    * Desktop-вариант и вёрстка lg+ не затрагиваются.
    */
   scrollFlowLayout?: boolean;
+  /**
+   * Только mobile scroll-лента: сразу финальный кадр текста без time-based reveal
+   * (избегает «пустых» блоков при быстром инерционном скролле).
+   */
+  instantMotion?: boolean;
 };
 
 /** Слева: локальный cinematic mist под колонкой текста; справа дом остаётся читаемым. */
@@ -115,7 +120,7 @@ function HeroCoverEyebrow({
       initial={enter}
       animate={alive}
       transition={{
-        duration: reduceFx ? 0.12 : CINEMATIC_TEXT_ENTER_S,
+        duration: reduceFx ? 0 : CINEMATIC_TEXT_ENTER_S,
         ease: EASE_PREMIUM,
         delay: reduceFx ? 0 : delay,
       }}
@@ -430,10 +435,11 @@ export function HeroContent({
   onGoPortfolio,
   onOpenRequestForm,
   scrollFlowLayout = false,
+  instantMotion = false,
 }: HeroContentProps) {
   const mqReduce = useMediaQuery("(prefers-reduced-motion: reduce)");
   const fmReduce = useReducedMotion();
-  const reduceFx = Boolean(mqReduce || fmReduce);
+  const reduceFx = Boolean(mqReduce || fmReduce || instantMotion);
 
   if (variant === "mobile") {
     return (

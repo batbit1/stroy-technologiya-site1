@@ -2601,6 +2601,38 @@ body {
     scrollbar-width: none !important;
     -ms-overflow-style: none !important;
   }
+
+  /*
+   * Мобильная story-лента: страховка от «пустых» блоков при быстром скролле
+   * (framer-motion interim opacity/blur). Transform не сбрасываем — не ломаем layout.
+   */
+  .mobile-story-flow,
+  .mobile-cinematic-flow {
+    content-visibility: visible !important;
+    contain-intrinsic-size: auto !important;
+  }
+
+  .mobile-story-flow *,
+  .mobile-cinematic-flow *,
+  .mobile-story-step *,
+  .mobile-text-step *,
+  .mobile-cinematic-step * {
+    opacity: 1 !important;
+    visibility: visible !important;
+    filter: none !important;
+    animation: none !important;
+    transition: opacity 0s linear, transform 0s linear, filter 0s linear, color 0s linear !important;
+    transition-delay: 0s !important;
+  }
+
+  .mobile-story-flow canvas,
+  .mobile-cinematic-flow canvas,
+  .mobile-story-step canvas,
+  .mobile-cinematic-step canvas {
+    opacity: 1 !important;
+    filter: none !important;
+    transition: none !important;
+  }
 }
 
 /*
