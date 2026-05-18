@@ -1721,50 +1721,85 @@ body {
     position: fixed !important;
     inset: 0 !important;
     width: 100vw !important;
-    height: 100dvh !important;
+    /* 100lvh стабильнее 100dvh: динамический viewport при скрытии/показе адресной строки не даёт «zoom» при смене направления скролла */
+    height: 100lvh !important;
     max-width: none !important;
     z-index: 0 !important;
     overflow: hidden !important;
     transform: none !important;
+    translate: none !important;
+    scale: 1 !important;
+    rotate: none !important;
     margin: 0 !important;
     padding: 0 !important;
-    pointer-events: none;
-    box-sizing: border-box;
+    pointer-events: none !important;
+    box-sizing: border-box !important;
     animation: none !important;
     transition: none !important;
     will-change: auto !important;
     filter: none !important;
     perspective: none !important;
+    opacity: 1 !important;
+    background: transparent !important;
   }
 
-  /* Статичный финальный кадр desktop-sequence (full-res); без motion/transform при скролле. */
+  /* Статичный финальный кадр desktop-sequence; без motion и без привязки к dynamic viewport height */
   .mobile-static-house-bg {
     position: fixed !important;
     inset: 0 !important;
+
     width: 100vw !important;
-    height: 100dvh !important;
-    max-width: none !important;
-    max-height: none !important;
+    height: 100lvh !important;
+
     z-index: 0 !important;
     pointer-events: none !important;
-    overflow: hidden !important;
-    box-sizing: border-box !important;
 
     background-image: url("/sequence/new-house/desktop/frame_0122.webp") !important;
     background-size: cover !important;
     background-position: center center !important;
     background-repeat: no-repeat !important;
-    background-attachment: scroll !important;
 
     transform: none !important;
-    scale: 1 !important;
     translate: none !important;
+    scale: 1 !important;
+    rotate: none !important;
+
     animation: none !important;
     transition: none !important;
     will-change: auto !important;
 
-    backface-visibility: hidden !important;
-    -webkit-backface-visibility: hidden !important;
+    opacity: 1 !important;
+    filter: none !important;
+
+    max-width: none !important;
+    max-height: none !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .mobile-static-house-bg img {
+    position: absolute !important;
+    inset: 0 !important;
+
+    width: 100% !important;
+    height: 100% !important;
+
+    object-fit: cover !important;
+    object-position: center center !important;
+
+    transform: none !important;
+    translate: none !important;
+    scale: 1 !important;
+    rotate: none !important;
+
+    animation: none !important;
+    transition: none !important;
+    will-change: auto !important;
+
+    opacity: 1 !important;
+    filter: none !important;
   }
 
   .mobile-cinematic-bg__stage {
