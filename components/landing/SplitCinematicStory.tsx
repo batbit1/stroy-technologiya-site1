@@ -603,18 +603,30 @@ function SceneCopy({
           ? "mb-0"
           : "mb-[clamp(34px,4vmin,44px)]";
 
-  const copyShellClass = proofListLayout
+  const copyShellClass =
+    (proofListLayout
+      ? [
+          "relative isolate min-w-0 w-full max-w-full about-copy lg:max-w-none lg:self-center lg:justify-self-start lg:translate-x-[clamp(-12px,-0.65vw,-4px)]",
+          hasProofSupportingParagraph ? "proof-scene-unified-body-copy" : "",
+        ]
+          .filter(Boolean)
+          .join(" ")
+      : "relative isolate min-w-0 w-full max-w-full lg:max-w-[min(680px,46vw)] lg:self-center lg:justify-self-start lg:pt-[clamp(88px,10vh,128px)] lg:pb-[clamp(48px,7vh,88px)] lg:translate-x-[clamp(-12px,-0.65vw,-4px)]") +
+    (scrollFlow ? " mobile-luxury-mist-host mobile-story-copy--luxury-scroll" : "");
+
+  const eyebrowRowClass = proofListLayout
     ? [
-        "relative isolate min-w-0 w-full max-w-full about-copy lg:max-w-none lg:self-center lg:justify-self-start lg:translate-x-[clamp(-12px,-0.65vw,-4px)]",
-        hasProofSupportingParagraph ? "proof-scene-unified-body-copy" : "",
+        "about-copy-eyebrow-row scene-copy-eyebrow-row mb-[clamp(24px,3.5vmin,34px)] flex w-full max-w-full items-center gap-3 lg:max-w-none",
+        scrollFlow ? "flex-col items-center justify-center gap-2 text-center" : "",
       ]
         .filter(Boolean)
         .join(" ")
-    : "relative isolate min-w-0 w-full max-w-full lg:max-w-[min(680px,46vw)] lg:self-center lg:justify-self-start lg:pt-[clamp(88px,10vh,128px)] lg:pb-[clamp(48px,7vh,88px)] lg:translate-x-[clamp(-12px,-0.65vw,-4px)]";
-
-  const eyebrowRowClass = proofListLayout
-    ? "about-copy-eyebrow-row scene-copy-eyebrow-row mb-[clamp(24px,3.5vmin,34px)] flex w-full max-w-full items-center gap-3 lg:max-w-none"
-    : "scene-copy-eyebrow-row mb-[clamp(24px,3.5vmin,34px)] flex w-full max-w-full items-center gap-3 lg:max-w-[min(680px,46vw)]";
+    : [
+        "scene-copy-eyebrow-row mb-[clamp(24px,3.5vmin,34px)] flex w-full max-w-full items-center gap-3 lg:max-w-[min(680px,46vw)]",
+        scrollFlow ? "flex-col items-center justify-center gap-2 text-center" : "",
+      ]
+        .filter(Boolean)
+        .join(" ");
 
   return (
     <motion.div
@@ -624,7 +636,12 @@ function SceneCopy({
       transition={cm.transition}
     >
       <div className="scene-copy-readability-glow" aria-hidden />
-      <div className="relative z-[1] flex flex-col gap-0 text-left scene-copy-stack">
+      <div
+        className={[
+          "relative z-[1] flex flex-col gap-0 scene-copy-stack",
+          scrollFlow ? "items-center text-center" : "text-left",
+        ].join(" ")}
+      >
         <div className="split-copy-rule mb-2.5 lg:mb-3" aria-hidden />
         <div className={eyebrowRowClass}>
           {softFx ? (
@@ -635,7 +652,7 @@ function SceneCopy({
           ) : (
             <motion.span
               aria-hidden
-              className="inline-block h-px w-14 shrink-0 origin-left bg-[rgba(137,103,67,0.34)]"
+              className="inline-block h-px w-14 shrink-0 origin-center bg-[rgba(137,103,67,0.34)]"
               initial={{ opacity: 0, scaleX: 0 }}
               animate={{ opacity: 1, scaleX: 1 }}
               transition={{
@@ -645,7 +662,13 @@ function SceneCopy({
               }}
             />
           )}
-          <div className="min-w-0 flex-1">
+          <div
+            className={
+              scrollFlow
+                ? "flex w-full min-w-0 justify-center px-1"
+                : "min-w-0 flex-1"
+            }
+          >
             <CinematicEyebrow
               text={step.eyebrow}
               narrow={narrow}
@@ -671,7 +694,8 @@ function SceneCopy({
         </div>
         <p
           className={[
-            "scene-copy-description pointer-events-none m-0 w-full text-left",
+            "scene-copy-description pointer-events-none m-0 w-full max-w-[min(560px,100%)]",
+            scrollFlow ? "text-center" : "text-left",
             proofMainSceneCopyDescriptionMb,
           ].join(" ")}
         >
@@ -681,8 +705,9 @@ function SceneCopy({
         {hasProofSupportingParagraph ? (
           <p
             className={[
-              "scene-copy-description pointer-events-none m-0 w-full text-left",
+              "scene-copy-description pointer-events-none m-0 w-full max-w-[min(560px,100%)]",
               "mt-[clamp(14px,1.75vmin,18px)]",
+              scrollFlow ? "text-center" : "text-left",
               hasProofFooter ? "mb-[clamp(22px,3vmin,30px)]" : "mb-0",
             ].join(" ")}
           >
@@ -692,7 +717,12 @@ function SceneCopy({
 
         {featurePoints.length > 0 && !proofListLayout ? (
           <motion.ul
-            className="scene-copy-notes w-full list-none"
+            className={[
+              "scene-copy-notes w-full max-w-[min(560px,100%)] list-none",
+              scrollFlow ? "mx-auto text-center" : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
             initial={blm.initial}
             animate={blm.animate}
             transition={blm.transition}
@@ -701,12 +731,16 @@ function SceneCopy({
             {featurePoints.map((fp, bi) => (
               <li
                 key={`${index}-fp-${bi}`}
-                className="scene-copy-feature-row border-b border-[rgba(34,30,26,0.08)] py-[13px] last:border-b-0 last:pb-0 first:pt-0"
+                className={`scene-copy-feature-row border-b py-[13px] last:border-b-0 last:pb-0 first:pt-0 ${scrollFlow ? "mobile-luxury-list-row border-[rgba(34,30,26,0.05)] text-center" : "border-[rgba(34,30,26,0.08)] text-left"}`}
               >
-                <div className="min-w-0 text-left font-sans font-semibold text-[rgba(26,22,18,0.88)] [font-size:clamp(13px,0.88vw,16px)] [line-height:1.38]">
+                <div
+                  className={`min-w-0 font-sans font-semibold text-[rgba(26,22,18,0.88)] [font-size:clamp(13px,0.88vw,16px)] [line-height:1.38] ${scrollFlow ? "mx-auto max-w-[min(560px,100%)] text-center" : "text-left"}`}
+                >
                   {fp.title}
                 </div>
-                <p className="pointer-events-none m-0 mt-2 max-w-[560px] text-left font-sans font-normal text-[rgba(26,22,18,0.62)] [font-size:clamp(13px,0.84vw,15px)] [line-height:1.66]">
+                <p
+                  className={`pointer-events-none m-0 mt-2 max-w-[560px] font-sans font-normal text-[rgba(26,22,18,0.62)] [font-size:clamp(13px,0.84vw,15px)] [line-height:1.66] ${scrollFlow ? "mx-auto text-center" : "text-left"}`}
+                >
                   {fp.description}
                 </p>
               </li>
@@ -716,7 +750,12 @@ function SceneCopy({
 
         {featurePoints.length === 0 && bullets.length > 0 ? (
           <motion.ul
-            className="scene-copy-notes w-full list-none"
+            className={[
+              "scene-copy-notes w-full max-w-[min(560px,100%)] list-none",
+              scrollFlow ? "mx-auto" : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
             initial={blm.initial}
             animate={blm.animate}
             transition={blm.transition}
@@ -730,7 +769,9 @@ function SceneCopy({
                 <span className="scene-copy-note-index font-sans tabular-nums">
                   {String(bi + 1).padStart(2, "0")}
                 </span>
-                <span className="scene-copy-bullet-text min-w-0 text-left font-sans">
+                <span
+                  className={`scene-copy-bullet-text min-w-0 font-sans ${scrollFlow ? "text-center" : "text-left"}`}
+                >
                   {bullet}
                 </span>
               </li>
@@ -739,16 +780,26 @@ function SceneCopy({
         ) : null}
 
         {hasSupplementaryList ? (
-          <p className="scene-copy-footnote pointer-events-none max-w-[500px] font-sans">
+          <p
+            className={[
+              "scene-copy-footnote pointer-events-none font-sans",
+              scrollFlow
+                ? "mx-auto max-w-[min(500px,100%)] text-center"
+                : "max-w-[500px] text-left",
+            ].join(" ")}
+          >
             частное домостроение / полный цикл работ / оренбург и область
           </p>
         ) : null}
 
         {step.cta ? (
           <div
-            className={
-              proofListLayout ? "pb-0 pt-0 sm:pb-0" : "pt-1 sm:pt-1.5"
-            }
+            className={[
+              proofListLayout ? "pb-0 pt-0 sm:pb-0" : "pt-1 sm:pt-1.5",
+              scrollFlow ? "flex w-full justify-center" : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
             style={{ pointerEvents: ctaPointerEvents }}
           >
             <button
@@ -890,9 +941,15 @@ function StoryScene({
     (step.sceneKey === "about" || step.sceneKey === "services");
 
   const widthShell =
-    isProofCard
-      ? "min-w-0 w-[calc(100vw-32px)] lg:w-full lg:max-w-none"
-      : "w-[calc(100vw-32px)] max-w-[1600px] lg:w-full";
+    scrollFlow && isProofCard
+      ? "min-w-0 w-[calc(100vw-48px)] lg:w-full lg:max-w-none"
+      : scrollFlow
+        ? "w-[calc(100vw-48px)] max-w-[1600px] lg:w-full"
+        : isProofCard
+          ? "min-w-0 w-[calc(100vw-32px)] lg:w-full lg:max-w-none"
+          : "w-[calc(100vw-32px)] max-w-[1600px] lg:w-full";
+
+  const copyColScroll = scrollFlow ? " mobile-story-copy-col--luxury-scroll" : "";
 
   const proofSceneClass = scrollFlow
     ? "about-story-scene about-scene-layout cinematic-story-scene flex min-h-0 w-full min-w-0 flex-col justify-center gap-5 overflow-x-hidden px-0 py-0 lg:h-full lg:max-h-none lg:min-h-0 lg:overflow-visible lg:justify-end lg:pt-0 lg:pb-0"
@@ -906,7 +963,9 @@ function StoryScene({
     <div className={widthShell}>
         {isProofCard ? (
           <div data-scene-key={step.sceneKey} className={proofSceneClass}>
-            <div className="story-scene-copy-col relative min-h-0 min-w-0 lg:self-center lg:justify-self-start">
+            <div
+              className={`story-scene-copy-col relative min-h-0 min-w-0 lg:self-center lg:justify-self-start${copyColScroll}`}
+            >
               <SceneCopy
                 step={step}
                 index={index}
@@ -917,7 +976,9 @@ function StoryScene({
                 proofListLayout
               />
             </div>
-            <div className="about-proof-column relative min-h-0 min-w-0 shrink-0 lg:justify-self-end lg:self-center">
+            <div
+              className={`about-proof-column relative min-h-0 min-w-0 shrink-0 lg:justify-self-end lg:self-center${scrollFlow ? " mobile-story-proof-col--luxury" : ""}`}
+            >
               {proofItems.length > 0 ? (
                 <ProofListColumn
                   items={proofItems}
@@ -933,7 +994,9 @@ function StoryScene({
           </div>
         ) : (
           <div data-scene-key={step.sceneKey} className={splitSceneClass}>
-            <div className="story-scene-copy-col relative min-h-0 min-w-0 lg:justify-self-start lg:self-center">
+            <div
+              className={`story-scene-copy-col relative min-h-0 min-w-0 lg:justify-self-start lg:self-center${copyColScroll}`}
+            >
               <SceneCopy
                 step={step}
                 index={index}

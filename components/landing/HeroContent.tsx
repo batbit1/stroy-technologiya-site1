@@ -299,7 +299,7 @@ function HeroMobile({
     : { opacity: 0, y: 10, filter: "blur(6px)" };
   const aliveSub = { opacity: 1, y: 0, filter: "blur(0px)" };
 
-  const scrim = (
+  const scrim = scrollFlowLayout ? null : (
     <div
       aria-hidden
       className="pointer-events-none absolute inset-0"
@@ -308,7 +308,7 @@ function HeroMobile({
   );
 
   const columnClass = scrollFlowLayout
-    ? "relative mx-auto flex w-full max-w-[calc(100vw-32px)] flex-col px-1 xs:max-w-[min(22.5rem,calc(100vw-36px))] xs:px-2 pt-0"
+    ? "relative z-[22] mx-auto flex w-full max-w-[calc(100vw-48px)] translate-x-[8px] flex-col items-center px-[22px] text-center pt-0"
     : "relative mx-auto flex w-full max-w-[calc(100vw-32px)] flex-col px-1 xs:max-w-[min(22.5rem,calc(100vw-36px))] xs:px-2";
 
   const columnStyle = scrollFlowLayout
@@ -319,7 +319,14 @@ function HeroMobile({
       };
 
   const body = (
-    <div className="hero-copy">
+    <div
+      className={[
+        "hero-copy",
+        scrollFlowLayout ? "hero-copy--mobile-luxury-scroll mobile-luxury-mist-host" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
       <div className="hero-readability-glow" aria-hidden />
       <div className="hero-copy-eyebrow">
         <HeroCoverEyebrow
@@ -387,7 +394,7 @@ function HeroMobile({
       >
         {scrim}
         <div
-          className={`${columnClass} flex min-h-0 flex-1 flex-col justify-center`}
+          className={`${columnClass} flex min-h-0 flex-1 flex-col justify-center motion-hero-scroll-col`}
         >
           {body}
         </div>
