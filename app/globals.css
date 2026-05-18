@@ -1730,20 +1730,41 @@ body {
     padding: 0 !important;
     pointer-events: none;
     box-sizing: border-box;
+    animation: none !important;
+    transition: none !important;
+    will-change: auto !important;
+    filter: none !important;
+    perspective: none !important;
   }
 
-  /* Статичный финальный кадр дома вместо mobile canvas-sequence (эксперимент, ≤1023px). */
+  /* Статичный финальный кадр desktop-sequence (full-res); без motion/transform при скролле. */
   .mobile-static-house-bg {
-    position: fixed;
-    inset: 0;
-    width: 100vw;
-    height: 100dvh;
-    z-index: 0;
-    pointer-events: none;
-    background-image: url("/sequence/new-house/mobile/frame_0122.webp");
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-width: none !important;
+    max-height: none !important;
+    z-index: 0 !important;
+    pointer-events: none !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+
+    background-image: url("/sequence/new-house/desktop/frame_0122.webp") !important;
+    background-size: cover !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+    background-attachment: scroll !important;
+
+    transform: none !important;
+    scale: 1 !important;
+    translate: none !important;
+    animation: none !important;
+    transition: none !important;
+    will-change: auto !important;
+
+    backface-visibility: hidden !important;
+    -webkit-backface-visibility: hidden !important;
   }
 
   .mobile-cinematic-bg__stage {
