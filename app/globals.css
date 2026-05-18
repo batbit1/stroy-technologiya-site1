@@ -1557,7 +1557,9 @@ body {
   .mobile-cinematic-flow,
   .mobile-story-step,
   .mobile-text-step,
-  .mobile-cinematic-step {
+  .mobile-cinematic-step,
+  .mobile-story-step__shell,
+  .mobile-cinematic-step__shell {
     scroll-snap-type: none !important;
     scroll-snap-align: none !important;
     scroll-snap-stop: normal !important;
@@ -1565,6 +1567,13 @@ body {
 
   html {
     overflow-x: hidden;
+    scroll-behavior: auto !important;
+    overscroll-behavior-y: auto !important;
+  }
+
+  body {
+    scroll-behavior: auto !important;
+    overscroll-behavior-y: auto !important;
   }
 
   .about-story-scene.about-scene-layout.cinematic-story-scene,

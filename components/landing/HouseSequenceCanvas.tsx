@@ -4,6 +4,7 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useSyncExternalStore,
 } from "react";
@@ -11,6 +12,8 @@ import {
 const MOBILE_MQ = "(max-width: 767px)";
 /** Совпадает с `lg:hidden` ленты mobile cinematic (Tailwind lg = 1024px). */
 const CINEMATIC_SCROLL_MOBILE_MQ = "(max-width: 1023px)";
+/** Реальный показ скрытых деревьев: desktop sticky активен только ≥lg; mobile cinematic — только <lg. */
+const LG_SCROLL_MQ = "(min-width: 1024px)";
 const DESKTOP_SEQUENCE_BASE = "/sequence/new-house/desktop";
 const MOBILE_SEQUENCE_BASE = "/sequence/new-house/mobile";
 
@@ -22,13 +25,28 @@ const IS_DEV = process.env.NODE_ENV === "development";
 /** Max DPR — чёткость на retina без лишнего расхода памяти. */
 const MAX_DPR = 3;
 
-/** Резкий скачок progress при инерционном скролле mobile cinematic — синхрон с целевым progress без лагa lerp. */
-const CIN_SCROLL_PROGRESS_JUMP = 0.08;
+/** Крупное расхождение raw vs smoothed: сразу raw, чтобы фон не «догонял» палец после свайпа. */
+const CIN_SCROLL_PROGRESS_JUMP = 0.04;
+const CIN_SCROLL_PROGRESS_LERP = 0.55;
+
+/** Stride через исходные mobile-файлы + потолок логических кадров (≤60). */
+const MOBILE_FRAME_STRIDE = 2;
+const MOBILE_FRAME_LOGICAL_CAP = 60;
+/** Сколько первых логических кадров ставим в очередь раньше остальных. */
+const MOBILE_PRELOAD_PRIORITY_FRAMES = 10;
+
+export type SequencePlacement = "desktopSticky" | "mobileCinematic";
+
 export type HouseSequenceCanvasProps = {
   desktopFrames: number;
   mobileFrames: number;
   progress01: number;
   className?: string;
+  /**
+   * `desktopSticky` — слой только для lg+ видимости; ниже lg не грузим sequence.
+   * `mobileCinematic` — только <lg (`lg:hidden`).
+   */
+  sequencePlacement?: SequencePlacement;
 };
 
 function clamp01(v: number): number {
@@ -40,17 +58,61 @@ function clampFrameIndex(index: number, total: number): number {
   return Math.min(Math.max(0, index), total - 1);
 }
 
-function resolveTotal(
-  isMobile: boolean,
+/** Индексы исходных mobile-фреймов для логических кадров canvas (subsampling по диску). */
+function buildMobileLogicalToPhysical(sourceFrameCount: number): number[] {
+  const n = Math.max(1, sourceFrameCount);
+  if (n <= 1) return [0];
+  const indices: number[] = [];
+  for (let physical = 0; physical < n; physical += MOBILE_FRAME_STRIDE) {
+    indices.push(physical);
+  }
+  while (indices.length > MOBILE_FRAME_LOGICAL_CAP) {
+    indices.pop();
+  }
+  return indices.length > 0 ? indices : [0];
+}
+
+function resolveSequencePaused(
+  placement: SequencePlacement,
+  lgViewport: boolean,
+): boolean {
+  return (
+    (placement === "desktopSticky" && !lgViewport) ||
+    (placement === "mobileCinematic" && lgViewport)
+  );
+}
+
+function resolveActiveMobileAssets(
+  placement: SequencePlacement,
+  paused: boolean,
+  isMobileLayout767: boolean,
+): boolean {
+  if (paused) return false;
+  if (placement === "mobileCinematic") return true;
+  return isMobileLayout767;
+}
+
+function resolveLogicalFrameTotal(
+  useMobileAssets: boolean,
+  mobilePhysicalMapLength: number,
   desktopFrames: number,
-  mobileFrames: number,
 ): number {
-  return Math.max(1, isMobile ? mobileFrames : desktopFrames);
+  if (useMobileAssets) return Math.max(1, mobilePhysicalMapLength);
+  return Math.max(1, desktopFrames);
+}
+
+function prependEarlyLogicalFrames(order: readonly number[], total: number): number[] {
+  if (total <= 1) return Array.from(order);
+  const headLen = Math.min(MOBILE_PRELOAD_PRIORITY_FRAMES, total);
+  const head = Array.from({ length: headLen }, (_, i) => i);
+  const seen = new Set(head);
+  const tail = order.filter((i) => !seen.has(i));
+  return [...head, ...tail];
 }
 
 /**
- * Выбор кадра: desktop — округление к ближайшему; mobile cinematic (≤1023px при
- * активном смягчении) — floor по сглаженному прогрессу, см. `smoothFrameProgressRef`.
+ * Выбор кадра: desktop — округление к ближайшему; mobile cinematic (видимый слой <lg,
+ * при активном blend) — floor по сглаженному прогрессу, см. `smoothFrameProgressRef`.
  */
 function resolveSequenceFrameIndex(
   progress01: number,
@@ -259,11 +321,26 @@ function getCinematicScrollMobileServerSnapshot(): boolean {
   return false;
 }
 
+function subscribeLgScrollMq(onChange: () => void): () => void {
+  const mq = window.matchMedia(LG_SCROLL_MQ);
+  mq.addEventListener("change", onChange);
+  return () => mq.removeEventListener("change", onChange);
+}
+
+function getLgScrollSnapshot(): boolean {
+  return window.matchMedia(LG_SCROLL_MQ).matches;
+}
+
+function getLgScrollServerSnapshot(): boolean {
+  return false;
+}
+
 export function HouseSequenceCanvas({
   desktopFrames,
   mobileFrames,
   progress01,
   className = "",
+  sequencePlacement = "desktopSticky",
 }: HouseSequenceCanvasProps) {
   const reducedMotion = useSyncExternalStore(
     subscribeReducedMotion,
@@ -283,6 +360,49 @@ export function HouseSequenceCanvas({
     getCinematicScrollMobileServerSnapshot,
   );
 
+  const isLargeViewport = useSyncExternalStore(
+    subscribeLgScrollMq,
+    getLgScrollSnapshot,
+    getLgScrollServerSnapshot,
+  );
+
+  const sequencePaused = resolveSequencePaused(
+    sequencePlacement,
+    isLargeViewport,
+  );
+
+  const mobilePhysMap = useMemo(
+    () => buildMobileLogicalToPhysical(Math.max(1, mobileFrames)),
+    [mobileFrames],
+  );
+
+  const useMobileAssetsActive = resolveActiveMobileAssets(
+    sequencePlacement,
+    sequencePaused,
+    isMobileLayout,
+  );
+
+  const totalLive = resolveLogicalFrameTotal(
+    useMobileAssetsActive,
+    mobilePhysMap.length,
+    desktopFrames,
+  );
+
+  const scrollBlendActive =
+    sequencePlacement === "mobileCinematic" &&
+    isCinematicScrollMobile &&
+    !reducedMotion &&
+    !sequencePaused;
+
+  const cinematicMobileFloor = scrollBlendActive;
+
+  const effectiveIdx = resolveSequenceFrameIndex(
+    progress01,
+    totalLive,
+    reducedMotion,
+    cinematicMobileFloor,
+  );
+
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasLayerRef = useRef<HTMLDivElement>(null);
@@ -291,26 +411,28 @@ export function HouseSequenceCanvas({
   const inFlightRef = useRef<Set<number>>(new Set());
 
   const variantRef = useRef<"desktop" | "mobile">("desktop");
+  const useMobileAssetsRef = useRef(useMobileAssetsActive);
   const reducedMotionRef = useRef(reducedMotion);
 
   const desktopFramesRef = useRef(desktopFrames);
   const mobileFramesRef = useRef(mobileFrames);
   const progress01Ref = useRef(progress01);
   const totalFramesRef = useRef(1);
-  /** Экспоненциальное сглаживание progress для mobile cinematic ≤1023px. */
+  const mobilePhysByLogicalRef = useRef(mobilePhysMap);
+  mobilePhysByLogicalRef.current = mobilePhysMap;
+
+  const sequencePausedRef = useRef(sequencePaused);
+  const scrollBlendActiveRef = useRef(scrollBlendActive);
+  const sequencePlacementRef = useRef(sequencePlacement);
+
+  sequencePausedRef.current = sequencePaused;
+  scrollBlendActiveRef.current = scrollBlendActive;
+  useMobileAssetsRef.current = useMobileAssetsActive;
+  sequencePlacementRef.current = sequencePlacement;
+
+  /** Сглаживание только для активного видимого mobile cinematic (<lg). */
   const smoothFrameProgressRef = useRef(clamp01(progress01));
-  const cinematicScrollMobileRef = useRef(false);
-
-  const totalLive = resolveTotal(isMobileLayout, desktopFrames, mobileFrames);
-
-  const cinematicMobileFloor =
-    isCinematicScrollMobile && !reducedMotion;
-  const effectiveIdx = resolveSequenceFrameIndex(
-    progress01,
-    totalLive,
-    reducedMotion,
-    cinematicMobileFloor,
-  );
+  const lastDrawLogicalIdxRef = useRef(Number.NaN);
 
   const preloadGenRef = useRef(0);
   const idleChainRef = useRef(0);
@@ -326,6 +448,7 @@ export function HouseSequenceCanvas({
     cw: number;
     ch: number;
     ctx: CanvasRenderingContext2D;
+    resized: boolean;
   } | null => {
     const canvas = canvasRef.current;
     const container = containerRef.current;
@@ -360,7 +483,7 @@ export function HouseSequenceCanvas({
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = "high";
 
-    return { cw, ch, ctx };
+    return { cw, ch, ctx, resized };
   }, []);
 
   const revealCanvas = useCallback(() => {
@@ -375,33 +498,44 @@ export function HouseSequenceCanvas({
   const drawScene = useCallback(() => {
     const fitted = fitCanvasIfNeeded();
     if (!fitted) {
-      // Контейнер ещё не получил размеры — показываем фон и раскрываем canvas.
       revealCanvas();
       return;
     }
-    const { cw, ch, ctx } = fitted;
+    const { cw, ch, ctx, resized } = fitted;
 
+    if (sequencePausedRef.current) {
+      lastDrawLogicalIdxRef.current = Number.NaN;
+      ctx.fillStyle = "#f4efe5";
+      ctx.fillRect(0, 0, cw, ch);
+      revealCanvas();
+      return;
+    }
+
+    const desktop = desktopFramesRef.current;
+    const phyMap = mobilePhysByLogicalRef.current;
+    const useM = useMobileAssetsRef.current;
     const total = Math.max(
       1,
-      resolveTotal(
-        isMobileLayout,
-        desktopFramesRef.current,
-        mobileFramesRef.current,
-      ),
+      resolveLogicalFrameTotal(useM, phyMap.length, desktop),
     );
     totalFramesRef.current = total;
 
-    const cinematicActive =
-      cinematicScrollMobileRef.current && !reducedMotionRef.current;
-    const progDraw = cinematicActive
+    const blend = scrollBlendActiveRef.current && !reducedMotionRef.current;
+    const progDraw = blend
       ? smoothFrameProgressRef.current
       : progress01Ref.current;
     const targetIdx = resolveSequenceFrameIndex(
       progDraw,
       total,
       reducedMotionRef.current,
-      cinematicActive,
+      blend,
     );
+
+    if (!resized && lastDrawLogicalIdxRef.current === targetIdx) {
+      revealCanvas();
+      return;
+    }
+    lastDrawLogicalIdxRef.current = targetIdx;
 
     ctx.fillStyle = "#f4efe5";
     ctx.fillRect(0, 0, cw, ch);
@@ -415,12 +549,12 @@ export function HouseSequenceCanvas({
       drawFallback(ctx, cw, ch, {
         frameLabel,
         totalFrames: total,
-        progress01: cinematicActive ? progDraw : progress01Ref.current,
+        progress01: blend ? progDraw : progress01Ref.current,
       });
     }
 
     revealCanvas();
-  }, [fitCanvasIfNeeded, isMobileLayout, revealCanvas]);
+  }, [fitCanvasIfNeeded, revealCanvas]);
 
   const scheduleDraw = useCallback(() => {
     if (drawRafRef.current !== 0) return;
@@ -437,7 +571,14 @@ export function HouseSequenceCanvas({
       if (imagesRef.current.has(i) || inFlightRef.current.has(i)) return;
 
       inFlightRef.current.add(i);
-      const url = sequenceUrl(variantRef.current, i);
+      const useM = useMobileAssetsRef.current;
+      const map = mobilePhysByLogicalRef.current;
+      const phys =
+        useM && map.length > 0
+          ? map[clampFrameIndex(i, map.length)]!
+          : i;
+      const seqVariant: "desktop" | "mobile" = useM ? "mobile" : "desktop";
+      const url = sequenceUrl(seqVariant, phys);
       if (IS_DEV && i === 0)
         console.log("[HouseSequenceCanvas] first frame url", url);
       const img = new Image();
@@ -476,7 +617,8 @@ export function HouseSequenceCanvas({
         if (generation !== preloadGenRef.current) return;
 
         let batch = 0;
-        while (pos < indices.length && batch < 4) {
+        const batchMax = scrollBlendActiveRef.current ? 2 : 4;
+        while (pos < indices.length && batch < batchMax) {
           const i = indices[pos]!;
           if (!imagesRef.current.has(i) && !inFlightRef.current.has(i)) {
             beginLoadFrame(i, generation);
@@ -501,13 +643,21 @@ export function HouseSequenceCanvas({
 
   const kickPreload = useCallback(
     (center: number) => {
+      if (sequencePausedRef.current) return;
+
       const generation = preloadGenRef.current;
       const total = Math.max(1, totalFramesRef.current);
       const c = clampFrameIndex(center, total);
-      const order = buildPreloadOrder(c, total);
+      let order = buildPreloadOrder(c, total);
+      if (
+        sequencePlacementRef.current === "mobileCinematic" &&
+        total > 1
+      ) {
+        order = prependEarlyLogicalFrames(order, total);
+      }
 
-      const priority = 6;
-      for (let k = 0; k < Math.min(priority, order.length); k++) {
+      const priority = Math.min(MOBILE_PRELOAD_PRIORITY_FRAMES, order.length);
+      for (let k = 0; k < priority; k++) {
         beginLoadFrame(order[k]!, generation);
       }
       runPreloadIdle(order, generation, priority);
@@ -520,39 +670,44 @@ export function HouseSequenceCanvas({
     idleChainRef.current += 1;
     imagesRef.current.clear();
     inFlightRef.current.clear();
+    lastDrawLogicalIdxRef.current = Number.NaN;
   }, []);
 
   useLayoutEffect(() => {
     const raw = clamp01(progress01);
-    const wasCinematicMobile = cinematicScrollMobileRef.current;
-    cinematicScrollMobileRef.current = isCinematicScrollMobile;
 
     desktopFramesRef.current = desktopFrames;
     mobileFramesRef.current = mobileFrames;
     progress01Ref.current = progress01;
     reducedMotionRef.current = reducedMotion;
-    variantRef.current = isMobileLayout ? "mobile" : "desktop";
-    totalFramesRef.current = resolveTotal(
-      isMobileLayout,
-      desktopFrames,
-      mobileFrames,
-    );
 
-    if (reducedMotion || !isCinematicScrollMobile) {
-      smoothFrameProgressRef.current = raw;
-    } else if (!wasCinematicMobile && isCinematicScrollMobile) {
+    mobilePhysByLogicalRef.current = mobilePhysMap;
+
+    const useM = resolveActiveMobileAssets(
+      sequencePlacement,
+      sequencePaused,
+      isMobileLayout,
+    );
+    useMobileAssetsRef.current = useM;
+    variantRef.current = useM ? "mobile" : "desktop";
+
+    const total = resolveLogicalFrameTotal(
+      useM,
+      mobilePhysMap.length,
+      desktopFrames,
+    );
+    totalFramesRef.current = total;
+
+    if (sequencePaused || !scrollBlendActive) {
       smoothFrameProgressRef.current = raw;
     } else {
       const prev = smoothFrameProgressRef.current;
       if (Math.abs(raw - prev) > CIN_SCROLL_PROGRESS_JUMP) {
         smoothFrameProgressRef.current = raw;
       } else {
-        let s = prev;
-        const alpha = 0.45;
-        for (let i = 0; i < 8; i++) {
-          s = s + (raw - s) * alpha;
-        }
-        smoothFrameProgressRef.current = clamp01(s);
+        smoothFrameProgressRef.current = clamp01(
+          prev + (raw - prev) * CIN_SCROLL_PROGRESS_LERP,
+        );
       }
     }
 
@@ -564,13 +719,16 @@ export function HouseSequenceCanvas({
     reducedMotion,
     isMobileLayout,
     isCinematicScrollMobile,
+    sequencePlacement,
+    sequencePaused,
+    scrollBlendActive,
     drawScene,
   ]);
 
   const configKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
-    const key = `${isMobileLayout}:${desktopFrames}:${mobileFrames}`;
+    const key = `${sequencePlacement}:${Boolean(isLargeViewport)}:${useMobileAssetsActive}:${desktopFrames}:${mobileFrames}`;
 
     if (configKeyRef.current !== key) {
       if (configKeyRef.current !== null) {
@@ -582,7 +740,9 @@ export function HouseSequenceCanvas({
     kickPreload(effectiveIdx);
     scheduleDraw();
   }, [
-    isMobileLayout,
+    sequencePlacement,
+    isLargeViewport,
+    useMobileAssetsActive,
     desktopFrames,
     mobileFrames,
     effectiveIdx,

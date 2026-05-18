@@ -2,7 +2,10 @@
 
 import { useEffect, useRef } from "react";
 import { HeroContent } from "./HeroContent";
-import { HouseSequenceCanvas } from "./HouseSequenceCanvas";
+import {
+  HouseSequenceCanvas,
+  type SequencePlacement,
+} from "./HouseSequenceCanvas";
 import { HouseStageFrame } from "./HouseStageFrame";
 import {
   MobileCinematicStoryScrollFlow,
@@ -82,9 +85,11 @@ function SceneAtmosphere() {
 function CinematicBackdropStack({
   progress01,
   breathing = true,
+  sequencePlacement = "desktopSticky",
 }: {
   progress01: number;
   breathing?: boolean;
+  sequencePlacement?: SequencePlacement;
 }) {
   return (
     <>
@@ -101,6 +106,7 @@ function CinematicBackdropStack({
             mobileFrames={MOBILE_SEQUENCE_FRAMES}
             progress01={progress01}
             className="pointer-events-none"
+            sequencePlacement={sequencePlacement}
           />
         </HouseStageFrame>
       </div>
@@ -190,6 +196,7 @@ export function LandingScrollScene({
               <CinematicBackdropStack
                 progress01={progress01}
                 breathing={false}
+                sequencePlacement="mobileCinematic"
               />
             </div>
           </div>
