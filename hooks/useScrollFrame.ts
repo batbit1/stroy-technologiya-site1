@@ -11,6 +11,8 @@ type Options = {
   timelineFrames?: number;
   /** Корень scroll-сцены. Если ref пустой — progress по всему документу */
   sectionRef?: RefObject<HTMLElement | null>;
+  /** Если false — слушатели scroll не ставятся (например mobile без cinematic progress). */
+  enabled?: boolean;
 };
 
 function clamp01(value: number): number {
@@ -51,7 +53,11 @@ function sectionScrollProgress(
  * scrollProgress (0..1) и опционально frameIndex по timelineFrames.
  * setState только из requestAnimationFrame на scroll/resize.
  */
-export function useScrollFrame({ timelineFrames, sectionRef }: Options) {
+export function useScrollFrame({
+  timelineFrames,
+  sectionRef,
+  enabled = true,
+}: Options) {
   const [frameIndex, setFrameIndex] = useState(0);
   const [scrollProgress, setScrollProgress] = useState(0);
 
@@ -84,6 +90,8 @@ export function useScrollFrame({ timelineFrames, sectionRef }: Options) {
   }, [sectionRef, timelineFrames]);
 
   useEffect(() => {
+    if (!enabled) return;
+
     const schedule = () => {
       if (rafIdRef.current !== 0) return;
       rafIdRef.current = requestAnimationFrame(() => {
@@ -104,7 +112,7 @@ export function useScrollFrame({ timelineFrames, sectionRef }: Options) {
         rafIdRef.current = 0;
       }
     };
-  }, [computeAndCommit]);
+  }, [computeAndCommit, enabled]);
 
   return {
     frameIndex,

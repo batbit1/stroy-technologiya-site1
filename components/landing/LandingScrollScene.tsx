@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 import { HeroContent } from "./HeroContent";
 import {
   HouseSequenceCanvas,
@@ -31,6 +31,22 @@ import { useScrollFrame } from "@/hooks/useScrollFrame";
  */
 const SCROLL_LENGTH_VH_MOBILE = MOBILE_LANDING_SCROLL_SPACER_VH;
 const SCROLL_LENGTH_VH_DESKTOP = 1450;
+
+const LG_TAILWIND_MQ = "(min-width: 1024px)";
+
+function subscribeDesktopViewport(onStoreChange: () => void): () => void {
+  const mq = window.matchMedia(LG_TAILWIND_MQ);
+  mq.addEventListener("change", onStoreChange);
+  return () => mq.removeEventListener("change", onStoreChange);
+}
+
+function getDesktopViewportSnapshot(): boolean {
+  return window.matchMedia(LG_TAILWIND_MQ).matches;
+}
+
+function getDesktopViewportServerSnapshot(): boolean {
+  return false;
+}
 
 /**
  * Cinematic atmosphere — house остаётся читаемым, но больше не выбеливается:
@@ -127,9 +143,17 @@ export function LandingScrollScene({
   onOpenRequestForm,
 }: LandingScrollSceneProps) {
   const sceneSectionRef = useRef<HTMLElement>(null);
+
+  const desktopViewport = useSyncExternalStore(
+    subscribeDesktopViewport,
+    getDesktopViewportSnapshot,
+    getDesktopViewportServerSnapshot,
+  );
+
   const { scrollProgress } = useScrollFrame({
     sectionRef: sceneSectionRef,
     timelineFrames: DESKTOP_SEQUENCE_FRAMES,
+    enabled: desktopViewport,
   });
 
   useEffect(() => {
@@ -192,13 +216,7 @@ export function LandingScrollScene({
             className="cinematic-bg mobile-cinematic-bg house-sequence-layer house-sequence-canvas-wrapper pointer-events-none"
             aria-hidden
           >
-            <div className="mobile-cinematic-bg__stage">
-              <CinematicBackdropStack
-                progress01={progress01}
-                breathing={false}
-                sequencePlacement="mobileCinematic"
-              />
-            </div>
+            <div className="mobile-static-house-bg" aria-hidden />
           </div>
 
           <div className="mobile-story-flow">

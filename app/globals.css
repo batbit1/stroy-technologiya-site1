@@ -1732,6 +1732,20 @@ body {
     box-sizing: border-box;
   }
 
+  /* Статичный финальный кадр дома вместо mobile canvas-sequence (эксперимент, ≤1023px). */
+  .mobile-static-house-bg {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100dvh;
+    z-index: 0;
+    pointer-events: none;
+    background-image: url("/sequence/new-house/mobile/frame_0122.webp");
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+  }
+
   .mobile-cinematic-bg__stage {
     position: absolute !important;
     inset: 0 !important;
