@@ -29,25 +29,6 @@ function PremiumImageFallback({ index }: { index: number }) {
   );
 }
 
-function PortfolioNavIcon({ direction }: { direction: "prev" | "next" }) {
-  return (
-    <svg
-      className="portfolio-showcase-nav__icon"
-      viewBox="0 0 16 16"
-      fill="none"
-      aria-hidden
-    >
-      <path
-        d={direction === "prev" ? "M10 3L5 8l5 5" : "M6 3l5 5-5 5"}
-        stroke="currentColor"
-        strokeWidth="1.25"
-        strokeLinecap="square"
-        strokeLinejoin="miter"
-      />
-    </svg>
-  );
-}
-
 export function PortfolioSection() {
   const projects = PORTFOLIO_SHOWCASE_PROJECTS;
   const openRequestForm = useNavScrollOpenRequestForm();
@@ -126,7 +107,7 @@ export function PortfolioSection() {
 
   return (
     <section
-      className="portfolio-showcase portfolio-showcase--stack relative overflow-x-clip bg-paper-soft pb-[clamp(2.5rem,5vw,4rem)] pt-[clamp(3rem,6vw,4.5rem)] lg:flex lg:min-h-[100svh] lg:flex-col"
+      className="portfolio-showcase portfolio-showcase--stack relative overflow-x-clip bg-paper-soft max-lg:bg-transparent pb-[clamp(2.5rem,5vw,4rem)] pt-[clamp(3rem,6vw,4.5rem)] lg:flex lg:min-h-[100svh] lg:flex-col"
       aria-labelledby="portfolio-heading"
     >
       <div aria-hidden className="portfolio-showcase-atmosphere pointer-events-none absolute inset-0" />
@@ -136,7 +117,7 @@ export function PortfolioSection() {
       />
 
       <div className="ds-container relative z-[1] flex w-full flex-1 flex-col">
-        {/* Header */}
+        <div className="portfolio-mobile-case-card lg:contents">
         <header className="portfolio-showcase-header mb-8 shrink-0 lg:mb-10 xl:mb-12">
           <p className="ds-eyebrow portfolio-showcase-header__eyebrow m-0">
             {portfolio.eyebrowLine}
@@ -147,6 +128,9 @@ export function PortfolioSection() {
           >
             {portfolio.heading}
           </h2>
+          <p className="portfolio-showcase-header__subtitle m-0 max-lg:block lg:hidden">
+            {portfolio.description}
+          </p>
         </header>
 
         {total > 1 ? (
@@ -158,7 +142,7 @@ export function PortfolioSection() {
         {/* Main viewer shell */}
         <div className="portfolio-showcase-viewer relative flex min-h-0 flex-1 flex-col">
           <motion.div
-            className="portfolio-showcase-stage flex min-h-0 w-full flex-1 flex-col gap-8 lg:flex-row lg:items-stretch lg:gap-12 xl:gap-16"
+            className="portfolio-showcase-stage max-lg:flex max-lg:flex-col min-h-0 w-full flex-1"
             drag={enableHorizontalDrag ? "x" : false}
             dragConstraints={enableHorizontalDrag ? { left: 0, right: 0 } : undefined}
             dragElastic={enableHorizontalDrag ? 0.1 : 0}
@@ -218,74 +202,6 @@ export function PortfolioSection() {
                     </div>
                   </motion.div>
                 </AnimatePresence>
-              </div>
-
-              <div className="portfolio-showcase-nav flex flex-col gap-3">
-                <div className="portfolio-showcase-nav__row flex items-center justify-between gap-3">
-                  <p
-                    className="portfolio-showcase-nav__label m-0 max-lg:hidden"
-                    aria-live="polite"
-                  >
-                    {project.category}
-                  </p>
-                  <div className="portfolio-showcase-nav__controls flex flex-1 items-center justify-center gap-2 lg:flex-none lg:justify-end">
-                    <button
-                      type="button"
-                      onClick={goPrev}
-                      className="portfolio-showcase-nav__btn"
-                      aria-label="Предыдущий проект"
-                    >
-                      <PortfolioNavIcon direction="prev" />
-                    </button>
-                    <p
-                      className="portfolio-showcase-nav__counter m-0 min-w-[3.25rem] text-center tabular-nums lg:hidden"
-                      aria-live="polite"
-                    >
-                      <span className="portfolio-showcase-nav__counter-current">
-                        {String(idx + 1).padStart(2, "0")}
-                      </span>
-                      <span className="portfolio-showcase-nav__counter-sep" aria-hidden>
-                        /
-                      </span>
-                      <span className="portfolio-showcase-nav__counter-total">
-                        {String(total).padStart(2, "0")}
-                      </span>
-                    </p>
-                    <button
-                      type="button"
-                      onClick={goNext}
-                      className="portfolio-showcase-nav__btn"
-                      aria-label="Следующий проект"
-                    >
-                      <PortfolioNavIcon direction="next" />
-                    </button>
-                  </div>
-                </div>
-                {total > 1 ? (
-                  <div
-                    className="portfolio-showcase-dots flex items-center justify-center gap-2 lg:hidden"
-                    role="tablist"
-                    aria-label="Выбор проекта"
-                  >
-                    {projects.map((p, i) => {
-                      const active = i === idx;
-                      return (
-                        <button
-                          key={p.id}
-                          type="button"
-                          role="tab"
-                          aria-selected={active}
-                          aria-label={`${p.title}`}
-                          className={[
-                            "portfolio-showcase-dot",
-                            active ? "portfolio-showcase-dot--active" : "",
-                          ].join(" ")}
-                          onClick={() => selectProject(i)}
-                        />
-                      );
-                    })}
-                  </div>
-                ) : null}
               </div>
               </div>
             </div>
@@ -377,6 +293,7 @@ export function PortfolioSection() {
               })}
             </div>
           </div>
+        </div>
         </div>
       </div>
     </section>

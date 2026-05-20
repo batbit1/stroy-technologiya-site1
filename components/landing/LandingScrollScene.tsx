@@ -212,11 +212,9 @@ export function LandingScrollScene({
          * Mobile: высота секции по контенту; canvas — fixed; лента — Hero + story (нативный скролл).
          */}
         <div className="lg:hidden relative w-full overflow-visible">
-          <div
-            className="cinematic-bg mobile-cinematic-bg house-sequence-layer house-sequence-canvas-wrapper pointer-events-none"
-            aria-hidden
-          >
-            <div className="mobile-static-house-bg" aria-hidden />
+          <div className="mobile-hero-background mobile-cinematic-bg pointer-events-none" aria-hidden>
+            <div className="mobile-hero-background__photo mobile-static-house-bg" aria-hidden />
+            <div className="mobile-hero-background__overlay" aria-hidden />
           </div>
 
           <div className="mobile-story-flow">

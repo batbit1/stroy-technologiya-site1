@@ -12,6 +12,79 @@ const HERO_COVER_EYEBROW = "ОРЕНБУРГ И ОБЛАСТЬ";
 
 const HERO_HEADLINE_LINES = ["Строим дома", "и объекты", "под ключ"] as const;
 
+const MOBILE_HERO_TRUST_ITEMS = [
+  { id: "region", label: "Работаем в Оренбурге и области" },
+  { id: "terms", label: "Фиксируем стоимость и сроки" },
+  { id: "quality", label: "Контроль качества на каждом этапе" },
+  { id: "duty", label: "Берём ответственность на себя" },
+] as const;
+
+function HeroTrustIcon({ id }: { id: (typeof MOBILE_HERO_TRUST_ITEMS)[number]["id"] }) {
+  const stroke = "currentColor";
+  const common = {
+    width: 16,
+    height: 16,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke,
+    strokeWidth: 1.35,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    "aria-hidden": true,
+  };
+
+  switch (id) {
+    case "region":
+      return (
+        <svg {...common}>
+          <path d="M12 21s6-5.2 6-10a6 6 0 1 0-12 0c0 4.8 6 10 6 10Z" />
+          <circle cx="12" cy="11" r="2.25" />
+        </svg>
+      );
+    case "terms":
+      return (
+        <svg {...common}>
+          <path d="M12 3 4 6v6c0 4.2 3.4 7.4 8 9 4.6-1.6 8-4.8 8-9V6l-8-3Z" />
+          <path d="m9.5 11.5 2 2 3.5-3.5" />
+        </svg>
+      );
+    case "quality":
+      return (
+        <svg {...common}>
+          <rect x="6" y="4" width="12" height="16" rx="1.5" />
+          <path d="M9 8h6M9 12h6M9 16h4" />
+        </svg>
+      );
+    case "duty":
+      return (
+        <svg {...common}>
+          <path d="M8 11V8a4 4 0 1 1 8 0v3" />
+          <path d="M6 11h12v2.5a4.5 4.5 0 0 1-4.5 4.5h-3A4.5 4.5 0 0 1 6 13.5V11Z" />
+          <path d="M9.5 15.5 12 18l2.5-2.5" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
+
+function HeroMobileTrustRow() {
+  return (
+    <div className="m-hero-trust-row" aria-label="Преимущества">
+      <ul className="m-hero-trust-row__list">
+        {MOBILE_HERO_TRUST_ITEMS.map((item) => (
+          <li key={item.id} className="m-hero-trust-row__item">
+            <span className="m-hero-trust-row__icon">
+              <HeroTrustIcon id={item.id} />
+            </span>
+            <span className="m-hero-trust-row__label">{item.label}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export type HeroContentProps = {
   variant: "mobile" | "desktop";
   data: SiteHero;
@@ -126,7 +199,7 @@ function HeroPremiumButton({
       type="button"
       onClick={onClick}
       className={[
-        "hero-mobile-cta-primary premium-cta-button premium-cta-button--primary group/hp relative inline-flex cursor-pointer items-center justify-center border-0",
+        "hero-mobile-cta-primary hero-mobile-cta--dark m-btn-primary premium-cta-button premium-cta-button--primary group/hp relative inline-flex cursor-pointer items-center justify-center border-0",
         "outline-none ring-offset-2 ring-offset-[var(--paper-soft)] focus-visible:ring-2 focus-visible:ring-[rgba(41,37,32,0.14)]",
         fullWidthMobile ? "w-full sm:w-auto" : "",
         className ?? "",
@@ -153,7 +226,7 @@ function HeroSecondaryLink({
       type="button"
       onClick={onClick}
       className={[
-        "premium-cta-button premium-cta-button--secondary hero-button-secondary group/hs relative inline-flex h-[50px] cursor-pointer items-center justify-center border-0",
+        "premium-cta-button premium-cta-button--secondary hero-button-secondary hero-mobile-cta-secondary--dark m-btn-secondary group/hs relative inline-flex h-[50px] cursor-pointer items-center justify-center border-0",
         "px-[22px] font-sans text-[12px] font-medium tracking-[0.08em] max-sm:tracking-[0.06em]",
         "outline-none active:opacity-92",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(41,37,32,0.08)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--paper-soft)]",
@@ -291,7 +364,7 @@ function HeroMobile({
     <div
       aria-hidden
       className={[
-        "hero-mobile-scrim pointer-events-none absolute inset-0",
+        "hero-mobile-scrim hero-mobile-scrim--dark pointer-events-none absolute inset-0",
         scrollFlowLayout ? "hero-mobile-scrim--scroll" : "",
       ]
         .filter(Boolean)
@@ -315,8 +388,8 @@ function HeroMobile({
       className={[
         "hero-copy",
         scrollFlowLayout
-          ? "hero-copy--mobile hero-copy--mobile-luxury-scroll mobile-luxury-mist-host"
-          : "hero-copy--mobile",
+          ? "hero-copy--mobile hero-copy--mobile-dark m-hero-glass-panel hero-copy--mobile-luxury-scroll"
+          : "hero-copy--mobile hero-copy--mobile-dark m-hero-glass-panel",
       ]
         .filter(Boolean)
         .join(" ")}
@@ -328,7 +401,7 @@ function HeroMobile({
           reduceFx={soft}
           delay={0}
           scrollFlowStatic={scrollFlowLayout}
-          className="hero-mobile-eyebrow ds-eyebrow cinematic-text-render"
+          className="hero-mobile-eyebrow hero-mobile-eyebrow--dark m-section-label cinematic-text-render"
         />
       </div>
 
@@ -339,7 +412,7 @@ function HeroMobile({
         reduceFx={soft}
         active
         delay={0.04}
-        className="premium-engraved-title hero-cinematic-title hero-title-measure hero-mobile-title cinematic-text-render font-display"
+        className="premium-engraved-title hero-cinematic-title hero-title-measure hero-mobile-title hero-mobile-title--dark cinematic-text-render font-display"
       />
 
       {scrollFlowLayout ? (
@@ -404,14 +477,17 @@ function HeroMobile({
   if (scrollFlowLayout) {
     return (
       <div
-        className="hero-content hero-content--scroll-flow relative z-[22] flex min-h-full w-full flex-1 flex-col pointer-events-auto lg:hidden"
+        className="hero-content hero-content--scroll-flow hero-content--premium-screen relative z-[22] flex min-h-full w-full flex-1 flex-col pointer-events-auto lg:hidden"
         data-hero-content=""
       >
         {scrim}
-        <div
-          className={`${columnClass} flex min-h-0 flex-1 flex-col justify-center motion-hero-scroll-col`}
-        >
-          {body}
+        <div className="m-hero-premium-stage flex min-h-0 w-full flex-1 flex-col justify-center">
+          <div
+            className={`${columnClass} m-hero-premium-stack flex min-h-0 flex-col items-center motion-hero-scroll-col`}
+          >
+            {body}
+            <HeroMobileTrustRow />
+          </div>
         </div>
       </div>
     );

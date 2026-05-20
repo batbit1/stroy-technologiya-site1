@@ -73,22 +73,551 @@ function defaultVisualType(index: number): StoryVisualType {
  */
 const DEFAULT_PROOF_CARD_HEADER = "Надёжность в деталях";
 
+const MOBILE_GLASS_SCENE_KEYS = new Set([
+  "about",
+  "services",
+  "guarantees",
+  "process",
+  "engineering",
+  "documents",
+]);
+
+function isMobileGlassScene(
+  scrollFlow: boolean | undefined,
+  sceneKey: string | undefined,
+): boolean {
+  return Boolean(scrollFlow && sceneKey && MOBILE_GLASS_SCENE_KEYS.has(sceneKey));
+}
+
+const PROOF_TRUST_ICON_IDS = [
+  "region",
+  "bank",
+  "license",
+  "clipboard",
+  "building",
+  "quality",
+] as const;
+
+type ProofTrustIconId = (typeof PROOF_TRUST_ICON_IDS)[number];
+
+function ProofTrustIcon({ id }: { id: ProofTrustIconId }) {
+  const stroke = "currentColor";
+  const common = {
+    width: 24,
+    height: 24,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke,
+    strokeWidth: 1.35,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    "aria-hidden": true,
+  };
+
+  switch (id) {
+    case "region":
+      return (
+        <svg {...common}>
+          <path d="M12 21s6-5.2 6-10a6 6 0 1 0-12 0c0 4.8 6 10 6 10Z" />
+          <circle cx="12" cy="11" r="2.25" />
+        </svg>
+      );
+    case "bank":
+      return (
+        <svg {...common}>
+          <path d="M4 10V8l8-4 8 4v2" />
+          <path d="M6 10v8h12v-8" />
+          <path d="M10 14h4M10 18h4" />
+        </svg>
+      );
+    case "license":
+      return (
+        <svg {...common}>
+          <path d="M12 3 4 6v6c0 4.2 3.4 7.4 8 9 4.6-1.6 8-4.8 8-9V6l-8-3Z" />
+          <path d="m9.5 11.5 2 2 3.5-3.5" />
+        </svg>
+      );
+    case "clipboard":
+      return (
+        <svg {...common}>
+          <rect x="6" y="4" width="12" height="16" rx="1.5" />
+          <path d="M9 8h6M9 12h6M9 16h4" />
+        </svg>
+      );
+    case "building":
+      return (
+        <svg {...common}>
+          <path d="M5 20V9l7-5 7 5v11" />
+          <path d="M9 20v-6h6v6" />
+          <path d="M10 12h1M13 12h1M10 15h1M13 15h1" />
+        </svg>
+      );
+    case "quality":
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="8.5" />
+          <path d="m8.5 12 2.25 2.25L15.5 9.5" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
+
+function proofTrustIconId(index: number): ProofTrustIconId {
+  return PROOF_TRUST_ICON_IDS[index] ?? PROOF_TRUST_ICON_IDS[0];
+}
+
+const SERVICE_PROOF_ICON_IDS = [
+  "house",
+  "commercial",
+  "industrial",
+  "brick",
+  "reconstruction",
+] as const;
+
+type ServiceProofIconId = (typeof SERVICE_PROOF_ICON_IDS)[number];
+
+function ServiceProofIcon({ id }: { id: ServiceProofIconId }) {
+  const stroke = "currentColor";
+  const common = {
+    width: 24,
+    height: 24,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke,
+    strokeWidth: 1.35,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    "aria-hidden": true,
+  };
+
+  switch (id) {
+    case "house":
+      return (
+        <svg {...common}>
+          <path d="M4 11 12 4l8 7" />
+          <path d="M6 11v9h12v-9" />
+          <path d="M10 20v-5h4v5" />
+        </svg>
+      );
+    case "commercial":
+      return (
+        <svg {...common}>
+          <path d="M5 20V7l7-4 7 4v13" />
+          <path d="M9 20v-4h2v4M13 20v-6h2v6M9 10h1M13 10h1M9 14h1M13 14h1" />
+        </svg>
+      );
+    case "industrial":
+      return (
+        <svg {...common}>
+          <path d="M4 20V10l4-2v12M12 20V6l4-2v16" />
+          <path d="M8 20h12" />
+          <path d="M16 8V4h3v4" />
+          <path d="M17 4v-2" />
+        </svg>
+      );
+    case "brick":
+      return (
+        <svg {...common}>
+          <rect x="5" y="6" width="14" height="12" rx="1" />
+          <path d="M5 10h14M5 14h14M12 6v12M5 10H12M12 10h7M5 14H12M12 14h7" />
+        </svg>
+      );
+    case "reconstruction":
+      return (
+        <svg {...common}>
+          <path d="M5 12 12 6l7 6" />
+          <path d="M7 12v8h10v-8" />
+          <circle cx="17" cy="17" r="3.5" />
+          <path d="M17 15.2v3.6M15.2 17h3.6" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
+
+function serviceProofIconId(index: number): ServiceProofIconId {
+  return SERVICE_PROOF_ICON_IDS[index] ?? SERVICE_PROOF_ICON_IDS[0];
+}
+
+const GUARANTEE_QUALITY_ICON_IDS = [
+  "shield",
+  "clipboard",
+  "wallet",
+  "certificate",
+  "magnifier",
+  "folder",
+] as const;
+
+type GuaranteeQualityIconId = (typeof GUARANTEE_QUALITY_ICON_IDS)[number];
+
+function GuaranteeQualityIcon({ id }: { id: GuaranteeQualityIconId }) {
+  const stroke = "currentColor";
+  const common = {
+    width: 24,
+    height: 24,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke,
+    strokeWidth: 1.35,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    "aria-hidden": true,
+  };
+
+  switch (id) {
+    case "shield":
+      return (
+        <svg {...common}>
+          <path d="M12 3 4 6v6c0 4.2 3.4 7.4 8 9 4.6-1.6 8-4.8 8-9V6l-8-3Z" />
+        </svg>
+      );
+    case "clipboard":
+      return (
+        <svg {...common}>
+          <rect x="6" y="4" width="12" height="16" rx="1.5" />
+          <path d="M9 8h6M9 12h6M9 16h4" />
+        </svg>
+      );
+    case "wallet":
+      return (
+        <svg {...common}>
+          <rect x="4" y="7" width="16" height="12" rx="2" />
+          <path d="M4 11h16M16 14h2" />
+        </svg>
+      );
+    case "certificate":
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="8.5" />
+          <path d="m8.5 12 2.25 2.25L15.5 9.5" />
+        </svg>
+      );
+    case "magnifier":
+      return (
+        <svg {...common}>
+          <circle cx="11" cy="11" r="6.5" />
+          <path d="m16.5 16.5 4 4" />
+        </svg>
+      );
+    case "folder":
+      return (
+        <svg {...common}>
+          <path d="M4 8a2 2 0 0 1 2-2h3l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8Z" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
+
+function guaranteeQualityIconId(index: number): GuaranteeQualityIconId {
+  return GUARANTEE_QUALITY_ICON_IDS[index] ?? GUARANTEE_QUALITY_ICON_IDS[0];
+}
+
+const PROCESS_STEP_ICON_IDS = [
+  "chat",
+  "search",
+  "calculator",
+  "document",
+  "shield",
+  "wrench",
+] as const;
+
+type ProcessStepIconId = (typeof PROCESS_STEP_ICON_IDS)[number];
+
+function ProcessStepIcon({ id }: { id: ProcessStepIconId }) {
+  const stroke = "currentColor";
+  const common = {
+    width: 24,
+    height: 24,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke,
+    strokeWidth: 1.35,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    "aria-hidden": true,
+  };
+
+  switch (id) {
+    case "chat":
+      return (
+        <svg {...common}>
+          <path d="M6 9.5a6 6 0 0 1 12 0v5a6 6 0 0 1-6 6h-1.4L9 21v-2H6a6 6 0 0 1-6-6v-5.5Z" />
+          <path d="M9 12h6M9 15h3.5" />
+        </svg>
+      );
+    case "search":
+      return (
+        <svg {...common}>
+          <circle cx="11" cy="11" r="6.5" />
+          <path d="m16.5 16.5 4 4" />
+        </svg>
+      );
+    case "calculator":
+      return (
+        <svg {...common}>
+          <rect x="6" y="4" width="12" height="16" rx="1.5" />
+          <path d="M9 8h6M9 11.5h2M13 11.5h2M9 15h2M13 15h2" />
+        </svg>
+      );
+    case "document":
+      return (
+        <svg {...common}>
+          <path d="M8 4h6l4 4v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" />
+          <path d="M14 4v4h4M10 12h6M10 16h4" />
+        </svg>
+      );
+    case "shield":
+      return (
+        <svg {...common}>
+          <path d="M12 3 4 6v6c0 4.2 3.4 7.4 8 9 4.6-1.6 8-4.8 8-9V6l-8-3Z" />
+          <path d="m9.5 12 2.25 2.25L15.5 9.5" />
+        </svg>
+      );
+    case "wrench":
+      return (
+        <svg {...common}>
+          <path d="M14.5 6.5a4.5 4.5 0 0 0-6.2 6.2L4 17l3 3 4.3-4.3a4.5 4.5 0 0 0 6.2-6.2l-2.2 2.2-1.4-1.4 2.2-2.2Z" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
+
+function processStepIconId(index: number): ProcessStepIconId {
+  return PROCESS_STEP_ICON_IDS[index] ?? PROCESS_STEP_ICON_IDS[0];
+}
+
+const ENGINEERING_WORK_ICON_IDS = [
+  "networks",
+  "electricity",
+  "water",
+  "heating",
+  "finishing",
+  "handover",
+] as const;
+
+type EngineeringWorkIconId = (typeof ENGINEERING_WORK_ICON_IDS)[number];
+
+function EngineeringWorkIcon({ id }: { id: EngineeringWorkIconId }) {
+  const stroke = "currentColor";
+  const common = {
+    width: 22,
+    height: 22,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke,
+    strokeWidth: 1.35,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    "aria-hidden": true,
+  };
+
+  switch (id) {
+    case "networks":
+      return (
+        <svg {...common}>
+          <path d="M5 8h14M5 12h14M5 16h10" />
+          <circle cx="18" cy="8" r="1.25" />
+          <circle cx="18" cy="12" r="1.25" />
+          <circle cx="15" cy="16" r="1.25" />
+        </svg>
+      );
+    case "electricity":
+      return (
+        <svg {...common}>
+          <path d="M13 3 8 13h5l-1 8 7-12h-5l-1-6Z" />
+        </svg>
+      );
+    case "water":
+      return (
+        <svg {...common}>
+          <path d="M12 3c3 4.5 6 7.2 6 10.5a6 6 0 1 1-12 0C6 10.2 9 7.5 12 3Z" />
+        </svg>
+      );
+    case "heating":
+      return (
+        <svg {...common}>
+          <rect x="5" y="6" width="14" height="12" rx="1.5" />
+          <path d="M8 10v4M12 10v4M16 10v4M8 18h8" />
+        </svg>
+      );
+    case "finishing":
+      return (
+        <svg {...common}>
+          <path d="M5 18 12 6l7 12" />
+          <path d="M8 14h8" />
+        </svg>
+      );
+    case "handover":
+      return (
+        <svg {...common}>
+          <path d="M4 11 12 4l8 7" />
+          <path d="M6 11v9h12v-9" />
+          <path d="m10 17 2 2 4-4" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
+
+function engineeringWorkIconId(index: number): EngineeringWorkIconId {
+  return ENGINEERING_WORK_ICON_IDS[index] ?? ENGINEERING_WORK_ICON_IDS[0];
+}
+
+const DOCUMENT_PROOF_ICON_IDS = [
+  "shield",
+  "bank",
+  "certificate",
+  "document",
+] as const;
+
+type DocumentProofIconId = (typeof DOCUMENT_PROOF_ICON_IDS)[number];
+
+function DocumentProofIcon({ id }: { id: DocumentProofIconId }) {
+  const stroke = "currentColor";
+  const common = {
+    width: 22,
+    height: 22,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke,
+    strokeWidth: 1.35,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    "aria-hidden": true,
+  };
+
+  switch (id) {
+    case "shield":
+      return (
+        <svg {...common}>
+          <path d="M12 3 4 6v6c0 4.2 3.4 7.4 8 9 4.6-1.6 8-4.8 8-9V6l-8-3Z" />
+          <path d="m9.5 12 2.25 2.25L15.5 9.5" />
+        </svg>
+      );
+    case "bank":
+      return (
+        <svg {...common}>
+          <path d="M4 10V8l8-4 8 4v2" />
+          <path d="M6 10v8h12v-8" />
+          <path d="M10 14h4M10 18h4" />
+        </svg>
+      );
+    case "certificate":
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="13" r="7" />
+          <path d="M12 10v3l2 1.5" />
+          <path d="M9 5h6l1 2H8l1-2Z" />
+        </svg>
+      );
+    case "document":
+      return (
+        <svg {...common}>
+          <path d="M8 4h6l4 4v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" />
+          <path d="M14 4v4h4M10 12h6M10 16h4" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
+
+function documentProofIconId(index: number): DocumentProofIconId {
+  return DOCUMENT_PROOF_ICON_IDS[index] ?? DOCUMENT_PROOF_ICON_IDS[0];
+}
+
+const GUARANTEE_STAT_ICON_IDS = ["shield", "buildings", "license"] as const;
+
+type GuaranteeStatIconId = (typeof GUARANTEE_STAT_ICON_IDS)[number];
+
+function GuaranteeStatIcon({ id }: { id: GuaranteeStatIconId }) {
+  const stroke = "currentColor";
+  const common = {
+    width: 20,
+    height: 20,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke,
+    strokeWidth: 1.35,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    "aria-hidden": true,
+  };
+
+  switch (id) {
+    case "shield":
+      return (
+        <svg {...common}>
+          <path d="M12 3 4 6v6c0 4.2 3.4 7.4 8 9 4.6-1.6 8-4.8 8-9V6l-8-3Z" />
+        </svg>
+      );
+    case "buildings":
+      return (
+        <svg {...common}>
+          <path d="M5 20V7l7-4 7 4v13" />
+          <path d="M9 20v-4h2v4M13 20v-6h2v6" />
+        </svg>
+      );
+    case "license":
+      return (
+        <svg {...common}>
+          <rect x="5" y="4" width="14" height="16" rx="1.5" />
+          <path d="M8 9h8M8 13h5" />
+          <path d="M9 17h6" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
+
+function guaranteeStatIconId(index: number): GuaranteeStatIconId {
+  return GUARANTEE_STAT_ICON_IDS[index] ?? GUARANTEE_STAT_ICON_IDS[0];
+}
+
 function ProofListColumn({
   items,
   storyIndex,
   reduceFx,
   scrollFlow = false,
   cardHeader = DEFAULT_PROOF_CARD_HEADER,
+  sceneKey,
 }: {
   items: StoryFeaturePoint[];
   storyIndex: number;
   reduceFx: boolean;
   scrollFlow?: boolean;
   cardHeader?: string;
+  sceneKey?: string;
 }) {
   const CARD_ENTER_S = 0.64;
   const itemBaseDelay = reduceFx ? 0.06 : 0.22;
   const itemStagger = reduceFx ? 0.02 : 0.04;
+  const isMobileGlassList = isMobileGlassScene(scrollFlow, sceneKey);
+  const isServicesGlassList = scrollFlow && sceneKey === "services";
+  const isGuaranteesGlassList = scrollFlow && sceneKey === "guarantees";
+  const isProcessGlassList = scrollFlow && sceneKey === "process";
+  const isEngineeringGlassList = scrollFlow && sceneKey === "engineering";
+  const isDocumentsGlassList = scrollFlow && sceneKey === "documents";
+  const proofCardClass = [
+    "about-proof-card",
+    isMobileGlassList ? "m-story-glass-card m-story-glass-card--trust" : "",
+    isServicesGlassList ? "m-story-glass-card--services-list" : "",
+    isGuaranteesGlassList ? "m-story-glass-card--guarantees-list" : "",
+    isProcessGlassList ? "m-story-glass-card--process-list" : "",
+    isEngineeringGlassList ? "m-story-glass-card--engineering-list" : "",
+    isDocumentsGlassList ? "m-story-glass-card--documents-list" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div
@@ -97,14 +626,74 @@ function ProofListColumn({
     >
       <div className="about-proof-card-outer">
         {scrollFlow ? (
-          <div className="about-proof-card">
-            <div className="about-proof-card-header">{cardHeader}</div>
+          <div className={proofCardClass}>
+            <div
+              className={[
+                "about-proof-card-header",
+                isServicesGlassList ||
+                isGuaranteesGlassList ||
+                isProcessGlassList ||
+                isEngineeringGlassList ||
+                isDocumentsGlassList
+                  ? "about-proof-card-header--services-list"
+                  : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+            >
+              {isServicesGlassList ||
+              isGuaranteesGlassList ||
+              isProcessGlassList ||
+              isEngineeringGlassList ||
+              isDocumentsGlassList ? (
+                <span
+                  aria-hidden
+                  className="about-proof-card-header__line"
+                />
+              ) : null}
+              {cardHeader}
+            </div>
             <ul className="about-proof-list">
               {items.map((fp, i) => (
                 <li
                   key={`${storyIndex}-proof-${i}-${fp.title}`}
-                  className="about-proof-item"
+                  className={[
+                    "about-proof-item",
+                    isMobileGlassList ? "m-story-trust-row" : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
                 >
+                  {isMobileGlassList && sceneKey === "about" ? (
+                    <span className="m-story-trust-row__icon" aria-hidden>
+                      <ProofTrustIcon id={proofTrustIconId(i)} />
+                    </span>
+                  ) : null}
+                  {isMobileGlassList && sceneKey === "services" ? (
+                    <span className="m-story-trust-row__icon" aria-hidden>
+                      <ServiceProofIcon id={serviceProofIconId(i)} />
+                    </span>
+                  ) : null}
+                  {isMobileGlassList && sceneKey === "guarantees" ? (
+                    <span className="m-story-trust-row__icon" aria-hidden>
+                      <GuaranteeQualityIcon id={guaranteeQualityIconId(i)} />
+                    </span>
+                  ) : null}
+                  {isMobileGlassList && sceneKey === "process" ? (
+                    <span className="m-story-trust-row__icon" aria-hidden>
+                      <ProcessStepIcon id={processStepIconId(i)} />
+                    </span>
+                  ) : null}
+                  {isMobileGlassList && sceneKey === "engineering" ? (
+                    <span className="m-story-trust-row__icon" aria-hidden>
+                      <EngineeringWorkIcon id={engineeringWorkIconId(i)} />
+                    </span>
+                  ) : null}
+                  {isMobileGlassList && sceneKey === "documents" ? (
+                    <span className="m-story-trust-row__icon" aria-hidden>
+                      <DocumentProofIcon id={documentProofIconId(i)} />
+                    </span>
+                  ) : null}
                   <div className="about-proof-item-title">{fp.title}</div>
                 </li>
               ))}
@@ -599,6 +1188,14 @@ function SceneCopy({
   const hasProofFooter =
     proofListLayout && Boolean(step.cta || stats.length > 0);
 
+  const isMobileGlassIntro = isMobileGlassScene(scrollFlow, step.sceneKey);
+  const isGuaranteesGlassIntro =
+    scrollFlow && step.sceneKey === "guarantees";
+  const isProcessGlassIntro = scrollFlow && step.sceneKey === "process";
+  const isEngineeringGlassIntro =
+    scrollFlow && step.sceneKey === "engineering";
+  const isDocumentsGlassIntro = scrollFlow && step.sceneKey === "documents";
+
   const proofMainSceneCopyDescriptionMb =
     proofListLayout && hasProofSupportingParagraph
       ? "mb-0"
@@ -617,12 +1214,36 @@ function SceneCopy({
           .filter(Boolean)
           .join(" ")
       : "relative isolate min-w-0 w-full max-w-full lg:max-w-[min(680px,46vw)] lg:self-center lg:justify-self-start lg:pt-[clamp(88px,10vh,128px)] lg:pb-[clamp(48px,7vh,88px)] lg:translate-x-[clamp(-12px,-0.65vw,-4px)]") +
-    (scrollFlow ? " mobile-luxury-mist-host mobile-story-copy--luxury-scroll" : "");
+    (scrollFlow ? " mobile-story-editorial-card mobile-story-copy--luxury-scroll" : "") +
+    (isMobileGlassIntro ? " m-story-glass-card" : "") +
+    (isMobileGlassIntro &&
+    !isProcessGlassIntro &&
+    !isGuaranteesGlassIntro &&
+    !isEngineeringGlassIntro &&
+    !isDocumentsGlassIntro
+      ? " m-story-glass-card--about"
+      : "") +
+    (isProcessGlassIntro ? " m-story-glass-card--process-intro" : "") +
+    (isEngineeringGlassIntro
+      ? " m-story-glass-card--engineering-intro m-card m-card--dark"
+      : "") +
+    (isDocumentsGlassIntro
+      ? " m-story-glass-card--documents-intro m-card m-card--dark"
+      : "") +
+    (isGuaranteesGlassIntro ? " m-story-glass-card--guarantees-intro" : "");
+
+  const eyebrowDecorLine =
+    "inline-block h-px w-10 shrink-0 bg-[rgba(230,205,160,0.32)] max-lg:bg-[rgba(230,205,160,0.32)]";
 
   const eyebrowRowClass = proofListLayout
     ? [
         "about-copy-eyebrow-row scene-copy-eyebrow-row mb-[clamp(24px,3.5vmin,34px)] flex w-full max-w-full items-center gap-3 lg:max-w-none",
-        scrollFlow ? "flex-col items-center justify-center gap-2 text-center" : "",
+        scrollFlow && !isMobileGlassIntro
+          ? "flex-col items-center justify-center gap-2 text-center"
+          : "",
+        isMobileGlassIntro
+          ? "max-lg:mb-[clamp(18px,4.2vw,22px)] max-lg:justify-center max-lg:gap-3"
+          : "",
       ]
         .filter(Boolean)
         .join(" ")
@@ -656,40 +1277,59 @@ function SceneCopy({
           scrollFlow ? "items-center text-center" : "text-left",
         ].join(" ")}
       >
-        <div className="split-copy-rule mb-2.5 lg:mb-3" aria-hidden />
+        {!isMobileGlassIntro ? (
+          <div className="split-copy-rule mb-2.5 lg:mb-3" aria-hidden />
+        ) : null}
         <div className={eyebrowRowClass}>
-          {softFx ? (
-            <span
-              aria-hidden
-              className="inline-block h-px w-14 shrink-0 bg-[rgba(137,103,67,0.34)]"
-            />
+          {isMobileGlassIntro ? (
+            <>
+              <span aria-hidden className={eyebrowDecorLine} />
+              <div className="flex min-w-0 shrink-0 justify-center px-1">
+                <CinematicEyebrow
+                  text={step.eyebrow}
+                  narrow={narrow}
+                  reduceFx={softFx}
+                  className="m-section-label font-sans text-[0.6875rem] font-semibold uppercase leading-snug tracking-[0.2em]"
+                />
+              </div>
+              <span aria-hidden className={eyebrowDecorLine} />
+            </>
           ) : (
-            <motion.span
-              aria-hidden
-              className="inline-block h-px w-14 shrink-0 origin-center bg-[rgba(137,103,67,0.34)]"
-              initial={{ opacity: 0, scaleX: 0 }}
-              animate={{ opacity: 1, scaleX: 1 }}
-              transition={{
-                duration: CINEMATIC_TEXT_ENTER_S,
-                ease: EASE_PREMIUM,
-                delay: 0.04,
-              }}
-            />
+            <>
+              {softFx ? (
+                <span
+                  aria-hidden
+                  className="inline-block h-px w-14 shrink-0 bg-[rgba(137,103,67,0.34)]"
+                />
+              ) : (
+                <motion.span
+                  aria-hidden
+                  className="inline-block h-px w-14 shrink-0 origin-center bg-[rgba(137,103,67,0.34)]"
+                  initial={{ opacity: 0, scaleX: 0 }}
+                  animate={{ opacity: 1, scaleX: 1 }}
+                  transition={{
+                    duration: CINEMATIC_TEXT_ENTER_S,
+                    ease: EASE_PREMIUM,
+                    delay: 0.04,
+                  }}
+                />
+              )}
+              <div
+                className={
+                  scrollFlow
+                    ? "flex w-full min-w-0 justify-center px-1"
+                    : "min-w-0 flex-1"
+                }
+              >
+                <CinematicEyebrow
+                  text={step.eyebrow}
+                  narrow={narrow}
+                  reduceFx={softFx}
+                  className="font-sans text-[0.72rem] font-bold uppercase leading-snug tracking-[0.22em] text-[rgba(23,23,23,0.48)]"
+                />
+              </div>
+            </>
           )}
-          <div
-            className={
-              scrollFlow
-                ? "flex w-full min-w-0 justify-center px-1"
-                : "min-w-0 flex-1"
-            }
-          >
-            <CinematicEyebrow
-              text={step.eyebrow}
-              narrow={narrow}
-              reduceFx={softFx}
-              className="font-sans text-[0.72rem] font-bold uppercase leading-snug tracking-[0.22em] text-[rgba(23,23,23,0.48)]"
-            />
-          </div>
         </div>
         <div
           className={
@@ -698,19 +1338,39 @@ function SceneCopy({
               : `premium-engraved-title-wrap mb-[clamp(28px,3.6vmin,36px)] min-h-0 w-full${proofListLayout ? " about-copy-title-wrap" : ""}`
           }
         >
-          <CinematicTitle
-            text={step.title}
-            narrow={narrow}
-            reduceFx={softFx}
-            delay={narrow ? 0.1 : 0.14}
-            className="premium-engraved-title cinematic-text-render text-balance font-display"
-          />
+          {isGuaranteesGlassIntro ? (
+            <h2 className="premium-engraved-title cinematic-text-render text-balance font-display m-guarantees-editorial-title">
+              <span className="m-guarantees-editorial-title__lead">
+                Гарантии и{" "}
+              </span>
+              <span className="m-guarantees-editorial-title__accent">
+                контроль качества
+              </span>
+            </h2>
+          ) : isEngineeringGlassIntro ? (
+            <h2 className="premium-engraved-title cinematic-text-render text-balance font-display m-section-title m-engineering-editorial-title">
+              {step.title}
+            </h2>
+          ) : isDocumentsGlassIntro ? (
+            <h2 className="premium-engraved-title cinematic-text-render text-balance font-display m-section-title m-documents-editorial-title">
+              {step.title}
+            </h2>
+          ) : (
+            <CinematicTitle
+              text={step.title}
+              narrow={narrow}
+              reduceFx={softFx}
+              delay={narrow ? 0.1 : 0.14}
+              className="premium-engraved-title cinematic-text-render text-balance font-display"
+            />
+          )}
         </div>
         <p
           className={[
             "scene-copy-description pointer-events-none m-0 w-full max-w-[min(560px,100%)]",
             scrollFlow ? "text-center" : "text-left",
             proofMainSceneCopyDescriptionMb,
+            isEngineeringGlassIntro || isDocumentsGlassIntro ? "m-section-copy" : "",
           ].join(" ")}
         >
           {step.text}
@@ -723,6 +1383,13 @@ function SceneCopy({
               "mt-[clamp(14px,1.75vmin,18px)]",
               scrollFlow ? "text-center" : "text-left",
               hasProofFooter ? "mb-[clamp(22px,3vmin,30px)]" : "mb-0",
+              isProcessGlassIntro ? "m-process-body-secondary" : "",
+              isEngineeringGlassIntro
+                ? "m-section-copy m-engineering-body-secondary"
+                : "",
+              isDocumentsGlassIntro
+                ? "m-section-copy m-documents-body-secondary"
+                : "",
             ].join(" ")}
           >
             {supportingParagraphProof}
@@ -860,7 +1527,15 @@ function SceneCopy({
                 "relative inline-flex h-[58px] max-w-full min-w-0 cursor-pointer items-center justify-center border-0 px-[34px]",
                 "font-sans text-[13px] font-semibold uppercase tracking-[0.14em]",
                 "outline-none ring-offset-2 ring-offset-[var(--paper-soft)] focus-visible:ring-2 focus-visible:ring-[rgba(41,37,32,0.14)]",
-              ].join(" ")}
+                isGuaranteesGlassIntro ? "m-guarantee-cta" : "",
+                isProcessGlassIntro ? "m-process-cta" : "",
+                isEngineeringGlassIntro
+                  ? "m-engineering-cta m-btn-primary"
+                  : "",
+                isDocumentsGlassIntro ? "m-documents-cta m-btn-primary" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
             >
               <span className="premium-cta-button__label">{step.cta}</span>
             </button>
@@ -872,6 +1547,7 @@ function SceneCopy({
             className={[
               "story-proof-stats pointer-events-none mt-[clamp(14px,2.2vmin,22px)] flex w-full max-w-[620px] flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:gap-0",
               step.sceneKey === "guarantees" ? "scene-stats" : "",
+              isGuaranteesGlassIntro ? "m-guarantee-stats" : "",
             ]
               .filter(Boolean)
               .join(" ")}
@@ -883,33 +1559,41 @@ function SceneCopy({
                 className={[
                   "flex min-w-0 flex-[1_1_auto] flex-col gap-1 sm:flex-[1_1_0]",
                   step.sceneKey === "guarantees" ? "scene-stat-item" : "",
-                  si > 0
+                  isGuaranteesGlassIntro ? "m-guarantee-stat-card" : "",
+                  si > 0 && !isGuaranteesGlassIntro
                     ? "border-t border-[rgba(34,30,26,0.1)] pt-4 sm:border-l sm:border-t-0 sm:pl-[clamp(14px,2.2vw,22px)] sm:pt-0 lg:ml-0 lg:pl-[clamp(18px,2.8vw,28px)]"
                     : "",
                 ]
                   .filter(Boolean)
                   .join(" ")}
               >
-                <span
-                  className={[
-                    "story-proof-stat-value",
-                    step.sceneKey === "guarantees" ? "scene-stat-value" : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                >
-                  {stat.value}
-                </span>
-                <span
-                  className={[
-                    "story-proof-stat-label",
-                    step.sceneKey === "guarantees" ? "scene-stat-label" : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                >
-                  {stat.label}
-                </span>
+                {isGuaranteesGlassIntro ? (
+                  <span className="m-guarantee-stat-card__icon" aria-hidden>
+                    <GuaranteeStatIcon id={guaranteeStatIconId(si)} />
+                  </span>
+                ) : null}
+                <div className="m-guarantee-stat-card__text">
+                  <span
+                    className={[
+                      "story-proof-stat-value",
+                      step.sceneKey === "guarantees" ? "scene-stat-value" : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                  >
+                    {stat.value}
+                  </span>
+                  <span
+                    className={[
+                      "story-proof-stat-label",
+                      step.sceneKey === "guarantees" ? "scene-stat-label" : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                  >
+                    {stat.label}
+                  </span>
+                </div>
               </div>
             ))}
           </div>
@@ -1054,6 +1738,7 @@ function StoryScene({
                   storyIndex={index}
                   reduceFx={reduceFx}
                   scrollFlow={scrollFlow}
+                  sceneKey={step.sceneKey}
                   cardHeader={
                     step.proofCardHeader ?? DEFAULT_PROOF_CARD_HEADER
                   }
@@ -1170,7 +1855,7 @@ export function MobileCinematicStoryScrollFlow({
   return (
     <div className="mobile-cinematic-flow pointer-events-auto w-full">
       <section
-        className="mobile-cinematic-step mobile-hero-step mobile-text-step mobile-story-step"
+        className="mobile-cinematic-step mobile-hero-step mobile-hero-step--dark mobile-text-step mobile-story-step"
         aria-label="Главный экран"
       >
         <div className="mobile-cinematic-step__shell flex min-h-0 w-full min-w-0 flex-1 flex-col">

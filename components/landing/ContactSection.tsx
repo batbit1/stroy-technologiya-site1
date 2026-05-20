@@ -21,6 +21,7 @@ import {
 } from "@/lib/motion-system";
 
 import { useInViewOnce } from "@/hooks/useInViewOnce";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 
 
@@ -80,6 +81,81 @@ const PHONE_OPTIONS = [
 
 ] as const;
 
+const CONTACT_EMAIL = "info@stroytech56.ru";
+
+const CONTACT_EMAIL_HREF = "mailto:info@stroytech56.ru";
+
+const MOBILE_FOOTER_NAV = [
+  { label: "О компании", sceneKey: "about" },
+  { label: "Услуги", sceneKey: "services" },
+  { label: "Портфолио", anchor: "portfolio" as const },
+  { label: "Технологии", sceneKey: "engineering" },
+  { label: "Процесс работы", sceneKey: "process" },
+  { label: "Документы", sceneKey: "documents" },
+  { label: "Контакты", anchor: "contacts" as const },
+] as const;
+
+function scrollMobileToAnchor(anchor: "portfolio" | "contacts") {
+  const el = document.querySelector(`[data-nav-anchor="${anchor}"]`);
+  if (!el) return;
+  const headerOffset = window.innerWidth < 768 ? 84 : 96;
+  const top =
+    el.getBoundingClientRect().top + window.scrollY - headerOffset;
+  window.scrollTo({ top, behavior: "auto" });
+}
+
+function scrollMobileToScene(sceneKey: string) {
+  const el = document.querySelector(
+    `.mobile-cinematic-flow [data-scene-key="${sceneKey}"], .mobile-story-flow [data-scene-key="${sceneKey}"]`,
+  );
+  if (!el) return;
+  const headerOffset = window.innerWidth < 768 ? 84 : 96;
+  const top =
+    el.getBoundingClientRect().top + window.scrollY - headerOffset;
+  window.scrollTo({ top, behavior: "auto" });
+}
+
+function ContactFooterIcon({ kind }: { kind: "pin" | "clock" | "mail" | "phone" }) {
+  const paths = {
+    pin: (
+      <path
+        d="M8 1.5a4 4 0 0 1 4 4c0 2.8-4 8.5-4 8.5S4 8.3 4 5.5a4 4 0 0 1 4-4Z"
+        stroke="currentColor"
+        strokeWidth="1.2"
+      />
+    ),
+    clock: (
+      <>
+        <circle cx="8" cy="8" r="5.5" stroke="currentColor" strokeWidth="1.2" />
+        <path d="M8 5v3.2l2 1.2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="square" />
+      </>
+    ),
+    mail: (
+      <path
+        d="M2.5 4.5h11L8 9 2.5 4.5Zm0 0 5.5 4.5L13.5 4.5"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinejoin="round"
+      />
+    ),
+    phone: (
+      <path
+        d="M5.2 2.8c.4 2.1 2.3 4 4.4 4.4l1.2-1.2a1 1 0 0 1 1-.2c1 .4 2.1.9 3 1.6a1 1 0 0 1 .3 1.1l-.9 2a1 1 0 0 1-.9.6c-1.6.2-4.6-2.8-4.8-4.4a1 1 0 0 1 .6-.9l2-.9a1 1 0 0 1 1.1.3c.7.9 1.2 2 1.6 3a1 1 0 0 1-.2 1L5.2 2.8Z"
+        stroke="currentColor"
+        strokeWidth="1.1"
+        strokeLinejoin="round"
+      />
+    ),
+  };
+  return (
+    <span className="contact-mobile-footer__icon" aria-hidden>
+      <svg viewBox="0 0 16 16" width="20" height="20" fill="none">
+        {paths[kind]}
+      </svg>
+    </span>
+  );
+}
+
 
 
 export function ContactSection() {
@@ -121,6 +197,8 @@ export function ContactSection() {
     threshold: 0,
 
   });
+
+  const isMobileContactLayout = useMediaQuery("(max-width: 1023px)");
 
 
 
@@ -244,7 +322,7 @@ export function ContactSection() {
 
             inert={!leftIn ? true : undefined}
 
-            className="contact-section-col-left min-w-0"
+            className="contact-section-col-left contact-section-col-left--desktop min-w-0 max-lg:hidden"
 
             style={{
 
@@ -352,41 +430,35 @@ export function ContactSection() {
 
             ref={rightRef}
 
-            inert={!rightIn ? true : undefined}
+            inert={!isMobileContactLayout && !rightIn ? true : undefined}
 
             className="contact-section-col-right min-w-0"
 
-            style={{
+            style={
 
-              opacity: rightIn ? 1 : 0,
+              isMobileContactLayout
 
-              transform: rightIn ? "translateY(0)" : "translateY(22px)",
+                ? undefined
 
-              transition: `opacity ${SHOW_MS}ms ${EASE_LUX}, transform ${SHOW_MS}ms ${EASE_LUX}`,
+                : {
 
-              pointerEvents: rightIn ? "auto" : "none",
+                    opacity: rightIn ? 1 : 0,
 
-            }}
+                    transform: rightIn ? "translateY(0)" : "translateY(22px)",
+
+                    transition: `opacity ${SHOW_MS}ms ${EASE_LUX}, transform ${SHOW_MS}ms ${EASE_LUX}`,
+
+                    pointerEvents: rightIn ? "auto" : "none",
+
+                  }
+
+            }
 
           >
 
-            <div
+            <div className="contact-map-card w-full min-w-0">
 
-              className="contact-map-card w-full min-w-0"
-
-              style={{
-
-                borderRadius: 32,
-
-                overflow: "hidden",
-
-                border: "1px solid rgba(80, 60, 40, 0.12)",
-
-                boxShadow: "0 24px 80px rgba(32, 24, 18, 0.18)",
-
-              }}
-
-            >
+              <div className="contact-map-card__frame-wrap">
 
               <div
 
@@ -440,6 +512,8 @@ export function ContactSection() {
 
               </div>
 
+              </div>
+
               <div className="contact-map-footer">
 
                 <p className="contact-map-address">{CONTACT_ADDRESS}</p>
@@ -452,13 +526,99 @@ export function ContactSection() {
 
         </div>
 
+        <div className="contact-mobile-footer-glass lg:hidden">
+          <div className="contact-mobile-footer-glass__grid">
+            <nav className="contact-mobile-footer__col" aria-label="Навигация по сайту">
+              <p className="contact-mobile-footer__label">Навигация</p>
+              <ul className="contact-mobile-footer__nav-list">
+                {MOBILE_FOOTER_NAV.map((item) => (
+                  <li key={item.label}>
+                    <button
+                      type="button"
+                      className="contact-mobile-footer__nav-link"
+                      onClick={() => {
+                        if ("anchor" in item) {
+                          scrollMobileToAnchor(item.anchor);
+                          return;
+                        }
+                        scrollMobileToScene(item.sceneKey);
+                      }}
+                    >
+                      {item.label}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+
+            <div className="contact-mobile-footer__col">
+              <p className="contact-mobile-footer__label">Контакты</p>
+              <ul className="contact-mobile-footer__contact-list">
+                <li className="contact-mobile-footer__contact-row">
+                  <ContactFooterIcon kind="pin" />
+                  <span>{CONTACT_ADDRESS}</span>
+                </li>
+                <li className="contact-mobile-footer__contact-row">
+                  <ContactFooterIcon kind="clock" />
+                  <span>{CONTACT_SCHEDULE}</span>
+                </li>
+                <li className="contact-mobile-footer__contact-row">
+                  <ContactFooterIcon kind="mail" />
+                  <a href={CONTACT_EMAIL_HREF} className="contact-mobile-footer__text-link">
+                    {CONTACT_EMAIL}
+                  </a>
+                </li>
+              </ul>
+              <button
+                type="button"
+                className="premium-cta-button premium-cta-button--primary contact-mobile-footer__cta"
+                onClick={() => setFormModalOpen(true)}
+              >
+                <span className="premium-cta-button__label">Оставить заявку</span>
+              </button>
+            </div>
+
+            <div className="contact-mobile-footer__col contact-mobile-footer__col--call">
+              <p className="contact-mobile-footer__label">Позвоните нам</p>
+              <a
+                href={PHONE_OPTIONS[1].href}
+                className="contact-mobile-footer__phone"
+              >
+                {PHONE_OPTIONS[1].display}
+              </a>
+              <button
+                type="button"
+                className="contact-mobile-footer__phone-btn"
+                aria-label="Позвонить — выбор номера"
+                onClick={togglePhoneModal}
+              >
+                <ContactFooterIcon kind="phone" />
+                <span className="contact-mobile-footer__phone-btn-label">Позвонить</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="contact-mobile-footer-glass__legal">
+            <p className="contact-mobile-footer__copyright m-0">
+              © 2025 СТРОЙ ТЕХНОЛОГИЯ
+            </p>
+            <button
+              type="button"
+              className="contact-mobile-footer__policy"
+              onClick={() => setPolicyModalOpen(true)}
+            >
+              Политика конфиденциальности
+            </button>
+          </div>
+        </div>
+
       </div>
 
 
 
-      <div className="ds-container relative mt-[clamp(3.25rem,6.5vw,5rem)] border-t border-[rgba(105,82,58,0.085)] pt-[clamp(1.75rem,3.5vw,2.5rem)]">
+      <div className="contact-section-legal-footer contact-section-legal-footer--desktop ds-container relative mt-[clamp(3.25rem,6.5vw,5rem)] border-t border-[rgba(105,82,58,0.085)] pt-[clamp(1.75rem,3.5vw,2.5rem)] max-lg:hidden">
 
-        <div className="contact-section-legal-footer flex flex-col items-center gap-3 text-center sm:items-start sm:text-left">
+        <div className="flex flex-col items-center gap-3 text-center sm:items-start sm:text-left">
 
           <p className="contact-section-legal-copy m-0 font-sans text-[0.98rem] font-semibold tracking-[0.04em] text-ink/[0.82]">
 

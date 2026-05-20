@@ -134,7 +134,7 @@ export const STORY_STEPS: StoryStep[] = [
     sceneKey: "services",
     eyebrow: "УСЛУГИ",
     visualType: "proofCard",
-    proofCardHeader: "Направления работ",
+    proofCardHeader: "НАПРАВЛЕНИЯ РАБОТ",
     title: "Строительство и реконструкция под ключ",
     text: "Частные дома, коммерческие и промышленные объекты в Оренбурге и Оренбургской области. Берём на себя полный цикл: от расчёта стоимости и проекта до сдачи объекта с документами.",
     featurePoints: [
@@ -164,7 +164,7 @@ export const STORY_STEPS: StoryStep[] = [
     sceneKey: "guarantees",
     eyebrow: "ГАРАНТИИ",
     visualType: "proofCard",
-    proofCardHeader: "Контроль качества",
+    proofCardHeader: "КОНТРОЛЬ КАЧЕСТВА",
     title: "Гарантии и контроль качества",
     text:
       "Фиксируем договор, смету и этапы до начала строительства. Контролируем материалы и работы на каждом этапе — от закладки фундамента до сдачи объекта с документами.",
@@ -251,7 +251,7 @@ export const STORY_STEPS: StoryStep[] = [
   },
   {
     sceneKey: "documents",
-    eyebrow: "ДОКУМЕНТЫ",
+    eyebrow: "ДОКУМЕНТЫ И ПОДТВЕРЖДЕНИЯ",
     visualType: "proofCard",
     proofCardHeader: "Подтверждения",
     title: "Документы и подтверждения",
