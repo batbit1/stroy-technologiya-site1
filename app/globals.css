@@ -868,13 +868,13 @@ body {
     z-index: 1;
     align-self: center;
     margin-inline: auto;
-    max-width: min(calc(100vw - 32px), 22.75rem);
-    padding-inline: clamp(12px, 3.4vw, 18px);
+    max-width: min(calc(100% - 32px), 22.75rem);
+    padding-inline: 0;
   }
 
   .hero-mobile-column--scroll {
-    max-width: min(calc(100vw - 40px), 22.75rem);
-    padding-inline: clamp(18px, 5.2vw, 26px);
+    max-width: min(calc(100% - 32px), 22.75rem);
+    padding-inline: 0;
   }
 
   .hero-mobile-column--overlay {
@@ -1070,19 +1070,21 @@ body {
     flex: 1 1 auto;
     padding-top: calc(env(safe-area-inset-top, 0px) + 58px);
     padding-bottom: clamp(18px, 5vw, 28px);
-    padding-inline: clamp(12px, 3.4vw, 18px);
+    padding-inline: 16px;
   }
 
   .m-hero-premium-stack {
     gap: clamp(12px, 3.6vw, 18px);
     width: 100%;
-    max-width: min(calc(100vw - 40px), 26.875rem);
+    max-width: min(100%, 26.875rem);
     margin-inline: auto;
   }
 
   .hero-content--scroll-flow .hero-mobile-column--scroll.m-hero-premium-stack {
-    max-width: min(calc(100vw - 40px), 26.875rem);
+    width: 100%;
+    max-width: min(100%, 26.875rem);
     padding-inline: 0;
+    margin-inline: auto;
   }
 
   .hero-copy--mobile-dark:not(.m-hero-glass-panel)::before,
@@ -1097,10 +1099,13 @@ body {
     isolation: isolate;
     overflow: hidden;
     box-sizing: border-box;
-    width: min(calc(100vw - 32px), 26.875rem);
+    width: 100%;
     max-width: 26.875rem;
     min-height: clamp(26rem, 66dvh, 34.5rem);
     margin-inline: auto;
+    left: auto;
+    right: auto;
+    transform: none;
     padding: clamp(2.15rem, 6.2vw, 3rem) clamp(1.75rem, 5.4vw, 2.4rem)
       clamp(2.1rem, 5.8vw, 2.85rem);
     border-radius: clamp(38px, 10vw, 46px);
