@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useMemo, type RefObject } from "react";
+import { createPortal } from "react-dom";
 
 import { PRIVACY_POLICY_BODY } from "@/data/privacyPolicyBody";
 
@@ -8,6 +9,8 @@ export type PolicyModalProps = {
   open: boolean;
   onClose: () => void;
   closeButtonRef?: RefObject<HTMLButtonElement | null>;
+  /** Portal target (document.body) — modal above sticky hero/sections */
+  portalTarget?: HTMLElement | null;
 };
 
 function paragraphClassName(block: string): string {
@@ -48,7 +51,12 @@ function renderParagraph(key: string, text: string) {
   );
 }
 
-export function PolicyModal({ open, onClose, closeButtonRef }: PolicyModalProps) {
+export function PolicyModal({
+  open,
+  onClose,
+  closeButtonRef,
+  portalTarget = null,
+}: PolicyModalProps) {
   const titleId = useId();
 
   const blocks = useMemo(() => {
@@ -61,9 +69,9 @@ export function PolicyModal({ open, onClose, closeButtonRef }: PolicyModalProps)
     return parts;
   }, []);
 
-  if (!open) return null;
+  if (!open || !portalTarget) return null;
 
-  return (
+  return createPortal(
     <div className="policy-modal-root" role="presentation">
       <button
         type="button"
@@ -97,6 +105,7 @@ export function PolicyModal({ open, onClose, closeButtonRef }: PolicyModalProps)
           {blocks.map((block, i) => renderParagraph(`b-${i}`, block))}
         </div>
       </div>
-    </div>
+    </div>,
+    portalTarget,
   );
 }

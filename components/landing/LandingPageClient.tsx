@@ -49,11 +49,8 @@ export function LandingPageClient() {
   }, [scrollToAnchor]);
 
   const openRequestForm = useCallback(() => {
-    scrollToAnchor(contactsAnchorRef.current);
-    requestAnimationFrame(() => {
-      dispatchOpenContactRequestForm();
-    });
-  }, [scrollToAnchor]);
+    dispatchOpenContactRequestForm();
+  }, []);
 
   return (
     <NavScrollProvider goContacts={goContacts} openRequestForm={openRequestForm}>

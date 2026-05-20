@@ -29,22 +29,6 @@ export type HeroContentProps = {
   instantMotion?: boolean;
 };
 
-/** Mobile overlay scrim only (desktop — .hero-desktop-scrim в globals.css). */
-const HERO_SCRIM_MO = `
-  radial-gradient(
-    ellipse 88% 72% at 50% 44%,
-    rgba(248, 244, 238, 0.68) 0%,
-    rgba(248, 244, 238, 0.38) 34%,
-    rgba(248, 244, 238, 0.12) 62%,
-    rgba(248, 244, 238, 0) 100%
-  ),
-  linear-gradient(
-    to top,
-    rgba(38, 34, 29, 0.02) 0%,
-    transparent 44%
-  )
-`;
-
 /**
  * Mount-time reveal оверлей-сцены: один короткий cинематичный кадр
  * (opacity 0 → 1, y 14 → 0, blur 6 → 0) за ≈ 0.28 c.
@@ -303,11 +287,15 @@ function HeroMobile({
     : { opacity: 0, y: 10, filter: "blur(6px)" };
   const aliveSub = { opacity: 1, y: 0, filter: "blur(0px)" };
 
-  const scrim = scrollFlowLayout ? null : (
+  const scrim = (
     <div
       aria-hidden
-      className="pointer-events-none absolute inset-0"
-      style={{ background: HERO_SCRIM_MO }}
+      className={[
+        "hero-mobile-scrim pointer-events-none absolute inset-0",
+        scrollFlowLayout ? "hero-mobile-scrim--scroll" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
     />
   );
 
@@ -333,7 +321,7 @@ function HeroMobile({
         .filter(Boolean)
         .join(" ")}
     >
-      <div className="hero-readability-glow" aria-hidden />
+      <div className="hero-readability-glow hero-readability-glow--mobile-off" aria-hidden />
       <div className="hero-copy-eyebrow">
         <HeroCoverEyebrow
           narrow

@@ -3,11 +3,13 @@
 
 
 import { useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { ContactForm } from "@/components/landing/ContactForm";
 
 import { PolicyModal } from "@/components/landing/PolicyModal";
 
+import { lockBodyScroll, unlockBodyScroll } from "@/lib/body-scroll-lock";
 import { CONTACT_OPEN_REQUEST_FORM_EVENT } from "@/lib/contact-form-events";
 
 import {
@@ -100,7 +102,7 @@ export function ContactSection() {
 
   const [policyModalOpen, setPolicyModalOpen] = useState(false);
 
-
+  const [modalPortal, setModalPortal] = useState<HTMLElement | null>(null);
 
   const { ref: leftRef, isInView: leftIn } = useInViewOnce<HTMLDivElement>({
 
@@ -135,19 +137,15 @@ export function ContactSection() {
 
 
   useEffect(() => {
+    setModalPortal(document.body);
+  }, []);
 
-    if (!formModalOpen && !phoneModalOpen && !policyModalOpen) return;
+  useEffect(() => {
+    const anyOpen = formModalOpen || phoneModalOpen || policyModalOpen;
+    if (!anyOpen) return;
 
-    const prev = document.body.style.overflow;
-
-    document.body.style.overflow = "hidden";
-
-    return () => {
-
-      document.body.style.overflow = prev;
-
-    };
-
+    lockBodyScroll();
+    return () => unlockBodyScroll();
   }, [formModalOpen, phoneModalOpen, policyModalOpen]);
 
 
@@ -488,192 +486,108 @@ export function ContactSection() {
 
 
 
-      {phoneModalOpen ? (
-
-        <div className="contact-phone-modal-root" role="presentation">
-
-          <button
-
-            type="button"
-
-            className="contact-modal-shared-backdrop"
-
-            aria-label="Закрыть выбор номера"
-
-            onClick={() => setPhoneModalOpen(false)}
-
-          />
-
-          <div
-
-            id="contact-phone-choice-dialog"
-
-            role="dialog"
-
-            aria-modal="true"
-
-            aria-labelledby={phoneTitleId}
-
-            className="contact-phone-modal-dialog"
-
-          >
-
-            <div className="contact-phone-modal-header">
-
-              <h3 id={phoneTitleId} className="contact-phone-modal-title">
-
-                Выберите номер для звонка
-
-              </h3>
-
+      {modalPortal && phoneModalOpen
+        ? createPortal(
+            <div className="contact-phone-modal-root" role="presentation">
               <button
-
-                ref={phoneCloseBtnRef}
-
                 type="button"
-
-                className="contact-request-modal-close"
-
-                aria-label="Закрыть"
-
+                className="contact-modal-shared-backdrop"
+                aria-label="Закрыть выбор номера"
                 onClick={() => setPhoneModalOpen(false)}
-
+              />
+              <div
+                id="contact-phone-choice-dialog"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby={phoneTitleId}
+                className="contact-phone-modal-dialog"
+                onClick={(e) => e.stopPropagation()}
               >
+                <div className="contact-phone-modal-header">
+                  <h3 id={phoneTitleId} className="contact-phone-modal-title">
+                    Выберите номер для звонка
+                  </h3>
+                  <button
+                    ref={phoneCloseBtnRef}
+                    type="button"
+                    className="contact-request-modal-close"
+                    aria-label="Закрыть"
+                    onClick={() => setPhoneModalOpen(false)}
+                  >
+                    ×
+                  </button>
+                </div>
+                <div className="contact-phone-modal-body">
+                  <ul className="contact-phone-choice-list">
+                    {PHONE_OPTIONS.map((row) => (
+                      <li key={row.href} className="contact-phone-choice-item">
+                        <a
+                          href={row.href}
+                          className="contact-phone-choice-link"
+                          onClick={() => setPhoneModalOpen(false)}
+                        >
+                          <span className="contact-phone-choice-label">
+                            {row.label}
+                          </span>
+                          <span className="contact-phone-choice-number">
+                            {row.display}
+                          </span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>,
+            modalPortal,
+          )
+        : null}
 
-                ×
-
-              </button>
-
-            </div>
-
-            <div className="contact-phone-modal-body">
-
-              <ul className="contact-phone-choice-list">
-
-                {PHONE_OPTIONS.map((row) => (
-
-                  <li key={row.href} className="contact-phone-choice-item">
-
-                    <a
-
-                      href={row.href}
-
-                      className="contact-phone-choice-link"
-
-                      onClick={() => setPhoneModalOpen(false)}
-
-                    >
-
-                      <span className="contact-phone-choice-label">
-
-                        {row.label}
-
-                      </span>
-
-                      <span className="contact-phone-choice-number">
-
-                        {row.display}
-
-                      </span>
-
-                    </a>
-
-                  </li>
-
-                ))}
-
-              </ul>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      ) : null}
-
-
-
-      {formModalOpen ? (
-
-        <div className="contact-request-modal-root" role="presentation">
-
-          <button
-
-            type="button"
-
-            className="contact-modal-shared-backdrop"
-
-            aria-label="Закрыть форму заявки"
-
-            onClick={() => setFormModalOpen(false)}
-
-          />
-
-          <div
-
-            role="dialog"
-
-            aria-modal="true"
-
-            aria-labelledby={formTitleId}
-
-            className="contact-request-modal-dialog"
-
-          >
-
-            <div className="contact-request-modal-header">
-
-              <h3 id={formTitleId} className="contact-request-modal-title">
-
-                Оставить заявку
-
-              </h3>
-
+      {modalPortal && formModalOpen
+        ? createPortal(
+            <div className="contact-request-modal-root" role="presentation">
               <button
-
-                ref={formCloseBtnRef}
-
                 type="button"
-
-                className="contact-request-modal-close"
-
-                aria-label="Закрыть"
-
+                className="contact-modal-shared-backdrop"
+                aria-label="Закрыть форму заявки"
                 onClick={() => setFormModalOpen(false)}
-
+              />
+              <div
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby={formTitleId}
+                className="contact-request-modal-dialog"
+                onClick={(e) => e.stopPropagation()}
               >
-
-                ×
-
-              </button>
-
-            </div>
-
-            <ContactForm
-
-              idPrefix="contact-modal"
-
-              onPrivacyPolicyClick={() => setPolicyModalOpen(true)}
-
-            />
-
-          </div>
-
-        </div>
-
-      ) : null}
-
-
+                <div className="contact-request-modal-header">
+                  <h3 id={formTitleId} className="contact-request-modal-title">
+                    Оставить заявку
+                  </h3>
+                  <button
+                    ref={formCloseBtnRef}
+                    type="button"
+                    className="contact-request-modal-close"
+                    aria-label="Закрыть"
+                    onClick={() => setFormModalOpen(false)}
+                  >
+                    ×
+                  </button>
+                </div>
+                <ContactForm
+                  idPrefix="contact-modal"
+                  onPrivacyPolicyClick={() => setPolicyModalOpen(true)}
+                />
+              </div>
+            </div>,
+            modalPortal,
+          )
+        : null}
 
       <PolicyModal
-
         open={policyModalOpen}
-
         onClose={() => setPolicyModalOpen(false)}
-
         closeButtonRef={policyCloseBtnRef}
-
+        portalTarget={modalPortal}
       />
 
     </section>
