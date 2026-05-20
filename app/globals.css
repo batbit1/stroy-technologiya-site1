@@ -884,31 +884,6 @@ body {
 /* ── Mobile hero — editorial polish (≤1023px, desktop untouched) ───── */
 
 @media (max-width: 1023px) {
-  .mobile-menu-trigger {
-    min-width: 0;
-    min-height: 40px;
-    gap: 12px;
-    padding: 8px 14px;
-    border-radius: 10px;
-    border: 1px solid color-mix(in srgb, var(--line) 62%, transparent);
-    background: color-mix(in srgb, var(--paper) 72%, transparent);
-    box-shadow:
-      0 1px 0 color-mix(in srgb, var(--fine-line) 42%, transparent) inset,
-      0 6px 18px -14px color-mix(in srgb, var(--ink) 8%, transparent);
-  }
-
-  .mobile-menu-trigger__label {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    color: color-mix(in srgb, var(--graphite-soft) 90%, transparent);
-  }
-
-  .mobile-burger-lines span {
-    width: 18px;
-    background: color-mix(in srgb, var(--graphite-soft) 88%, transparent);
-  }
-
   .hero-mobile-column--scroll {
     max-width: min(calc(100vw - 40px), 22.75rem);
     padding-inline: clamp(18px, 5.2vw, 26px);
@@ -1555,34 +1530,38 @@ body {
 @media (max-width: 1023px) {
   .mobile-menu-trigger {
     box-sizing: border-box;
-    display: flex;
+    display: inline-flex;
     flex-shrink: 0;
     align-items: center;
-    justify-content: space-between;
-    gap: 14px;
-    min-width: 148px;
+    justify-content: center;
+    gap: 10px;
+    min-width: 0;
     min-height: 44px;
-    padding: 10px 16px 10px 18px;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 252, 248, 0.07);
-    background:
-      linear-gradient(165deg, #33302e 0%, #252321 42%, #141312 100%);
-    box-shadow:
-      0 2px 10px rgba(0, 0, 0, 0.28),
-      0 1px 0 rgba(255, 255, 255, 0.05) inset,
-      inset 0 -1px 0 rgba(0, 0, 0, 0.35);
+    height: 44px;
+    padding: 0 15px 0 17px;
     margin: 0;
+    border-radius: var(--radius-pill);
+    border: 1px solid color-mix(in srgb, #c8b891 12%, var(--line) 88%);
+    background: color-mix(in srgb, var(--paper) 94%, var(--ivory) 6%);
+    box-shadow:
+      0 1px 0 color-mix(in srgb, var(--fine-line) 50%, transparent) inset,
+      0 5px 16px -12px color-mix(in srgb, var(--ink) 5%, transparent);
     cursor: pointer;
     outline: none;
+    transition:
+      border-color var(--transition-fast),
+      background var(--transition-fast),
+      box-shadow var(--transition-fast),
+      transform 100ms var(--luxury-ease);
   }
 
   .mobile-menu-trigger__label {
     font-family: var(--font-sans);
-    font-size: 13px;
+    font-size: 10px;
     font-weight: 600;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: rgba(248, 246, 242, 0.94);
+    color: color-mix(in srgb, var(--graphite-soft) 86%, transparent);
   }
 
   .mobile-burger-lines {
@@ -1590,24 +1569,41 @@ body {
     flex-direction: column;
     align-items: flex-end;
     justify-content: center;
-    gap: 5px;
+    gap: 4px;
     flex-shrink: 0;
   }
 
   .mobile-burger-lines span {
     display: block;
-    width: 20px;
-    height: 2px;
+    width: 14px;
+    height: 1.25px;
     flex-shrink: 0;
     border-radius: 1px;
-    background: rgba(248, 244, 238, 0.9);
+    background: color-mix(in srgb, var(--graphite-soft) 80%, transparent);
   }
 
   .mobile-menu-trigger:focus-visible {
+    outline: none;
     box-shadow:
-      0 0 0 2px rgba(250, 246, 238, 0.35),
-      0 2px 10px rgba(0, 0, 0, 0.28),
-      0 1px 0 rgba(255, 255, 255, 0.05) inset;
+      0 0 0 2px color-mix(in srgb, var(--paper-soft) 96%, transparent),
+      0 0 0 3px color-mix(in srgb, var(--ink) 10%, transparent),
+      0 1px 0 color-mix(in srgb, var(--fine-line) 45%, transparent) inset;
+  }
+
+  .mobile-menu-trigger[aria-expanded="true"] {
+    border-color: color-mix(in srgb, var(--ink) 14%, var(--line) 86%);
+    background: color-mix(in srgb, var(--paper-soft) 55%, var(--paper) 45%);
+  }
+
+  @media (hover: hover) {
+    .mobile-menu-trigger:hover {
+      border-color: color-mix(in srgb, #c8b891 16%, var(--line) 84%);
+      background: color-mix(in srgb, var(--paper) 98%, transparent);
+    }
+  }
+
+  .mobile-menu-trigger:active {
+    transform: scale(0.98);
   }
 }
 

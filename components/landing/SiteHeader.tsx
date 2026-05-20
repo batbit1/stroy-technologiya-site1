@@ -108,7 +108,7 @@ export function SiteHeader({
 
           <button
             type="button"
-            className="mobile-menu-trigger flex items-center justify-between lg:hidden"
+            className="mobile-menu-trigger mobile-menu-trigger--capsule flex items-center justify-center gap-2.5 lg:hidden"
             aria-label={isMobileMenuOpen ? "Закрыть меню" : "Открыть меню"}
             aria-expanded={isMobileMenuOpen}
             aria-controls="site-header-mobile-menu"
