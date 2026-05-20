@@ -18,44 +18,33 @@ const EASE_SHOWCASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 function PremiumImageFallback({ index }: { index: number }) {
   const num = String(index + 1).padStart(2, "0");
   return (
-    <div className="pointer-events-none relative isolate size-full min-h-[12rem]">
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(135deg, rgba(250,246,238,0.96) 0%, rgba(232,218,198,0.72) 55%, rgba(218,200,178,0.55) 100%)",
-        }}
-      />
-      <div
-        aria-hidden
-        className="absolute inset-0 opacity-[0.35]"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(74,58,38,0.07) 1px,transparent 1px)," +
-            "linear-gradient(90deg,rgba(74,58,38,0.07) 1px,transparent 1px)",
-          backgroundSize: "28px 28px",
-        }}
-      />
-      <div
-        aria-hidden
-        className="absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(ellipse 72% 55% at 78% 18%, rgba(255,253,246,0.55) 0%, transparent 60%)",
-        }}
-      />
-      <div className="absolute left-6 top-6 font-display text-[clamp(3rem,8vw,4.5rem)] font-medium tabular-nums tracking-[0.08em] text-[rgba(42,34,26,0.12)]">
+    <div className="portfolio-showcase-fallback pointer-events-none relative isolate size-full min-h-[12rem]">
+      <div className="portfolio-showcase-fallback__base" aria-hidden />
+      <div className="portfolio-showcase-fallback__grid" aria-hidden />
+      <div className="portfolio-showcase-fallback__glow" aria-hidden />
+      <div className="portfolio-showcase-fallback__num font-display tabular-nums">
         {num}
       </div>
-      <div
-        aria-hidden
-        className="absolute inset-x-0 bottom-0 h-[40%]"
-        style={{
-          background:
-            "linear-gradient(to top, rgba(232,218,198,0.45) 0%, transparent)",
-        }}
-      />
     </div>
+  );
+}
+
+function PortfolioNavIcon({ direction }: { direction: "prev" | "next" }) {
+  return (
+    <svg
+      className="portfolio-showcase-nav__icon"
+      viewBox="0 0 16 16"
+      fill="none"
+      aria-hidden
+    >
+      <path
+        d={direction === "prev" ? "M10 3L5 8l5 5" : "M6 3l5 5-5 5"}
+        stroke="currentColor"
+        strokeWidth="1.25"
+        strokeLinecap="square"
+        strokeLinejoin="miter"
+      />
+    </svg>
   );
 }
 
@@ -103,17 +92,20 @@ export function PortfolioSection() {
   const isMobileSwipe = useMediaQuery("(max-width: 767px)");
   const isPortfolioDragViewportDesktop = useMediaQuery("(min-width: 1024px)");
   const swipeEnabled = isMobileSwipe && !reduceMotion && total > 1;
-  /** Framer horizontal drag только ≥lg; на mobile/tablet конфликтует со страничным скроллом. */
+  /** Desktop ≥lg: drag; phone ≤767: горизонтальный swipe по stage (порог 56px). */
   const allowPortfolioDrag =
     swipeEnabled && isPortfolioDragViewportDesktop;
+  const allowMobilePortfolioSwipe = swipeEnabled && !isPortfolioDragViewportDesktop;
+  const enableHorizontalDrag = allowPortfolioDrag || allowMobilePortfolioSwipe;
 
   const onMobileSwipeEnd = useCallback(
     (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-      if (!allowPortfolioDrag) return;
-      if (info.offset.x < -60) goNext();
-      if (info.offset.x > 60) goPrev();
+      if (!enableHorizontalDrag) return;
+      const threshold = allowMobilePortfolioSwipe ? 56 : 60;
+      if (info.offset.x < -threshold) goNext();
+      if (info.offset.x > threshold) goPrev();
     },
-    [allowPortfolioDrag, goNext, goPrev],
+    [enableHorizontalDrag, allowMobilePortfolioSwipe, goNext, goPrev],
   );
 
   if (total === 0 || !project) {
@@ -134,27 +126,24 @@ export function PortfolioSection() {
 
   return (
     <section
-      className="portfolio-showcase relative overflow-x-clip bg-paper-soft pb-[clamp(2.5rem,5vw,4rem)] pt-[clamp(3rem,6vw,4.5rem)] lg:flex lg:min-h-[100svh] lg:flex-col"
+      className="portfolio-showcase portfolio-showcase--stack relative overflow-x-clip bg-paper-soft pb-[clamp(2.5rem,5vw,4rem)] pt-[clamp(3rem,6vw,4.5rem)] lg:flex lg:min-h-[100svh] lg:flex-col"
       aria-labelledby="portfolio-heading"
     >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_88%_70%_at_10%_0%,rgba(255,251,243,0.92)_0%,transparent_58%),radial-gradient(ellipse_50%_44%_at_96%_18%,rgba(238,229,218,0.4)_0%,transparent_50%)]"
-      />
+      <div aria-hidden className="portfolio-showcase-atmosphere pointer-events-none absolute inset-0" />
       <div
         aria-hidden
         className="portfolio-showcase-grid pointer-events-none absolute inset-0 opacity-[0.034]"
       />
 
-      <div className="relative z-[1] mx-auto flex w-full max-w-[min(1240px,100%)] flex-1 flex-col px-4 xs:px-5 sm:px-8 lg:px-12">
+      <div className="ds-container relative z-[1] flex w-full flex-1 flex-col">
         {/* Header */}
-        <header className="mb-8 shrink-0 lg:mb-10 xl:mb-12">
-          <p className="m-0 font-sans text-[12px] font-semibold uppercase tracking-[0.22em] text-[rgba(42,34,26,0.42)]">
+        <header className="portfolio-showcase-header mb-8 shrink-0 lg:mb-10 xl:mb-12">
+          <p className="ds-eyebrow portfolio-showcase-header__eyebrow m-0">
             {portfolio.eyebrowLine}
           </p>
           <h2
             id="portfolio-heading"
-            className="mt-3 max-w-[14ch] text-balance font-display text-[clamp(2.35rem,5vw,3.85rem)] font-medium leading-[0.95] tracking-[-0.032em] text-[rgba(28,24,20,0.96)]"
+            className="ds-heading-display portfolio-showcase-header__title mt-3 max-w-[14ch]"
           >
             {portfolio.heading}
           </h2>
@@ -167,42 +156,36 @@ export function PortfolioSection() {
         ) : null}
 
         {/* Main viewer shell */}
-        <div
-          className="portfolio-showcase-viewer relative flex min-h-0 flex-1 flex-col rounded-[32px] border border-[rgba(74,58,38,0.10)] p-[clamp(1rem,3vw,1.65rem)] shadow-[0_40px_120px_rgba(70,52,28,0.10)] lg:rounded-[40px] lg:p-[clamp(1.35rem,2.8vw,2.25rem)]"
-          style={{
-            background:
-              "linear-gradient(135deg, rgba(250,246,238,0.92), rgba(232,218,198,0.58))",
-          }}
-        >
-          {/* Desktop: row | Mobile: column image first */}
+        <div className="portfolio-showcase-viewer relative flex min-h-0 flex-1 flex-col">
           <motion.div
-            className="flex min-h-0 w-full flex-1 flex-col gap-8 lg:flex-row lg:items-stretch lg:gap-10 xl:gap-14"
-            drag={allowPortfolioDrag ? "x" : false}
-            dragConstraints={allowPortfolioDrag ? { left: 0, right: 0 } : undefined}
-            dragElastic={allowPortfolioDrag ? 0.12 : 0}
-            onDragEnd={allowPortfolioDrag ? onMobileSwipeEnd : undefined}
+            className="portfolio-showcase-stage flex min-h-0 w-full flex-1 flex-col gap-8 lg:flex-row lg:items-stretch lg:gap-12 xl:gap-16"
+            drag={enableHorizontalDrag ? "x" : false}
+            dragConstraints={enableHorizontalDrag ? { left: 0, right: 0 } : undefined}
+            dragElastic={enableHorizontalDrag ? 0.1 : 0}
+            onDragEnd={enableHorizontalDrag ? onMobileSwipeEnd : undefined}
           >
             {/* Image — top on mobile, right on desktop */}
-            <div className="order-1 flex min-h-0 w-full shrink-0 flex-col lg:order-2 lg:w-[min(54%,520px)] lg:flex-1 xl:w-[min(56%,580px)]">
-              <div className="portfolio-showcase-image-frame group/img relative aspect-[16/10] w-full overflow-hidden rounded-[28px] border border-[rgba(74,58,38,0.08)] bg-[rgba(255,252,246,0.35)] shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] lg:rounded-[32px]">
+            <div className="portfolio-showcase-visual order-1 flex min-h-0 w-full shrink-0 flex-col lg:order-2 lg:w-[min(58%,560px)] lg:flex-1 xl:w-[min(60%,620px)]">
+              <div className="portfolio-showcase-media">
+              <div className="portfolio-showcase-image-frame relative w-full overflow-hidden">
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.div
                     key={project.id}
-                    className="absolute inset-0"
+                    className="portfolio-showcase-image-layer absolute inset-0"
                     initial={
                       reduceMotion
                         ? { opacity: 0 }
-                        : { opacity: 0, scale: 0.96, x: 24 }
+                        : { opacity: 0, scale: 0.985, x: 18 }
                     }
                     animate={{ opacity: 1, scale: 1, x: 0 }}
                     exit={
                       reduceMotion
                         ? { opacity: 0 }
-                        : { opacity: 0, scale: 0.98, x: -12 }
+                        : { opacity: 0, scale: 0.992, x: -10 }
                     }
                     transition={imageTransition}
                   >
-                    <div className="relative size-full origin-center transition-transform duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] lg:group-hover/img:scale-[1.025]">
+                    <div className="portfolio-showcase-image-inner relative size-full origin-center">
                       {project.image ? (
                         <Image
                           src={project.image}
@@ -211,7 +194,7 @@ export function PortfolioSection() {
                           priority
                           sizes="(max-width: 1023px) min(96vw, 720px), min(580px, 56vw)"
                           quality={86}
-                          className="object-cover object-center [filter:contrast(1.04)_saturate(0.92)_brightness(0.96)]"
+                          className="portfolio-showcase-image object-cover object-center"
                           placeholder="blur"
                           blurDataURL={
                             project.blurDataURL ?? PORTFOLIO_IMAGE_BLUR_DATA_URL
@@ -222,91 +205,136 @@ export function PortfolioSection() {
                       )}
                       <div
                         aria-hidden
-                        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[rgba(28,22,18,0.42)] via-[rgba(28,22,18,0.08)] to-transparent"
+                        className="portfolio-showcase-image-edge portfolio-showcase-image-edge--top"
                       />
-                      <div className="pointer-events-none absolute bottom-5 left-5 right-5 z-[2]">
-                        <p className="m-0 font-sans text-[11px] font-semibold uppercase tracking-[0.2em] text-[rgba(248,244,238,0.55)]">
-                          {project.category}
-                        </p>
-                        <p className="mt-1 line-clamp-2 font-display text-[clamp(1.1rem,2.2vw,1.45rem)] font-medium leading-[1.15] tracking-[-0.02em] text-[rgba(248,244,238,0.94)]">
-                          {project.title}
-                        </p>
-                      </div>
+                      <div
+                        aria-hidden
+                        className="portfolio-showcase-image-edge portfolio-showcase-image-edge--bottom"
+                      />
+                      <div
+                        aria-hidden
+                        className="portfolio-showcase-image-letterbox"
+                      />
                     </div>
                   </motion.div>
                 </AnimatePresence>
               </div>
 
-              {/* Arrows — below image on mobile, could show on desktop at bottom of image col */}
-              <div className="mt-4 flex items-center justify-end gap-2 lg:mt-5">
-                <button
-                  type="button"
-                  onClick={goPrev}
-                  className="portfolio-showcase-arrow flex size-11 items-center justify-center rounded-full border border-[rgba(74,58,38,0.12)] bg-[rgba(255,255,255,0.45)] text-[rgba(28,24,20,0.72)] shadow-[0_8px_24px_rgba(70,52,28,0.08)] backdrop-blur-sm transition-[transform,background,border-color] duration-300 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] hover:border-[rgba(74,58,38,0.2)] hover:bg-[rgba(255,255,255,0.62)] active:scale-[0.97]"
-                  aria-label="Предыдущий проект"
-                >
-                  <span className="text-lg leading-none" aria-hidden>
-                    ←
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  onClick={goNext}
-                  className="portfolio-showcase-arrow flex size-11 items-center justify-center rounded-full border border-[rgba(74,58,38,0.12)] bg-[rgba(255,255,255,0.45)] text-[rgba(28,24,20,0.72)] shadow-[0_8px_24px_rgba(70,52,28,0.08)] backdrop-blur-sm transition-[transform,background,border-color] duration-300 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] hover:border-[rgba(74,58,38,0.2)] hover:bg-[rgba(255,255,255,0.62)] active:scale-[0.97]"
-                  aria-label="Следующий проект"
-                >
-                  <span className="text-lg leading-none" aria-hidden>
-                    →
-                  </span>
-                </button>
+              <div className="portfolio-showcase-nav flex flex-col gap-3">
+                <div className="portfolio-showcase-nav__row flex items-center justify-between gap-3">
+                  <p
+                    className="portfolio-showcase-nav__label m-0 max-lg:hidden"
+                    aria-live="polite"
+                  >
+                    {project.category}
+                  </p>
+                  <div className="portfolio-showcase-nav__controls flex flex-1 items-center justify-center gap-2 lg:flex-none lg:justify-end">
+                    <button
+                      type="button"
+                      onClick={goPrev}
+                      className="portfolio-showcase-nav__btn"
+                      aria-label="Предыдущий проект"
+                    >
+                      <PortfolioNavIcon direction="prev" />
+                    </button>
+                    <p
+                      className="portfolio-showcase-nav__counter m-0 min-w-[3.25rem] text-center tabular-nums lg:hidden"
+                      aria-live="polite"
+                    >
+                      <span className="portfolio-showcase-nav__counter-current">
+                        {String(idx + 1).padStart(2, "0")}
+                      </span>
+                      <span className="portfolio-showcase-nav__counter-sep" aria-hidden>
+                        /
+                      </span>
+                      <span className="portfolio-showcase-nav__counter-total">
+                        {String(total).padStart(2, "0")}
+                      </span>
+                    </p>
+                    <button
+                      type="button"
+                      onClick={goNext}
+                      className="portfolio-showcase-nav__btn"
+                      aria-label="Следующий проект"
+                    >
+                      <PortfolioNavIcon direction="next" />
+                    </button>
+                  </div>
+                </div>
+                {total > 1 ? (
+                  <div
+                    className="portfolio-showcase-dots flex items-center justify-center gap-2 lg:hidden"
+                    role="tablist"
+                    aria-label="Выбор проекта"
+                  >
+                    {projects.map((p, i) => {
+                      const active = i === idx;
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          role="tab"
+                          aria-selected={active}
+                          aria-label={`${p.title}`}
+                          className={[
+                            "portfolio-showcase-dot",
+                            active ? "portfolio-showcase-dot--active" : "",
+                          ].join(" ")}
+                          onClick={() => selectProject(i)}
+                        />
+                      );
+                    })}
+                  </div>
+                ) : null}
+              </div>
               </div>
             </div>
 
-            {/* Copy panel */}
-            <div className="order-2 flex min-w-0 flex-1 flex-col justify-center lg:order-1 lg:max-w-[min(100%,480px)] lg:pr-2">
+            <div className="portfolio-showcase-panel order-2 flex min-w-0 flex-1 flex-col justify-center lg:order-1 lg:max-w-[min(100%,440px)] lg:pr-1 xl:max-w-[min(100%,480px)]">
               <AnimatePresence mode="wait" initial={false}>
                 <motion.div
                   key={project.id}
                   initial={
-                    reduceMotion
-                      ? { opacity: 0 }
-                      : { opacity: 0, y: 16, filter: "blur(8px)" }
+                    reduceMotion ? { opacity: 0 } : { opacity: 0, y: 14 }
                   }
-                  animate={{
-                    opacity: 1,
-                    y: 0,
-                    filter: reduceMotion ? "blur(0px)" : "blur(0px)",
-                  }}
-                  exit={
-                    reduceMotion
-                      ? { opacity: 0 }
-                      : { opacity: 0, y: -10, filter: "blur(6px)" }
-                  }
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
                   transition={textTransition}
-                  className="flex flex-col"
+                  className="portfolio-showcase-copy-shell portfolio-showcase-copy portfolio-showcase-copy--panel flex min-h-0 flex-1 flex-col"
                 >
-                  <p className="m-0 mt-px font-sans text-[11px] font-semibold uppercase leading-snug tracking-[0.22em] text-[rgba(118,94,72,0.88)]">
+                  <p className="portfolio-showcase-copy__index portfolio-showcase-copy__index--panel m-0">
+                    <span className="portfolio-showcase-copy__index-current">
+                      {String(idx + 1).padStart(2, "0")}
+                    </span>
+                    <span className="portfolio-showcase-copy__index-sep" aria-hidden>
+                      /
+                    </span>
+                    <span className="portfolio-showcase-copy__index-total">
+                      {String(total).padStart(2, "0")}
+                    </span>
+                  </p>
+                  <p className="portfolio-showcase-copy__category m-0">
                     {project.category}
                   </p>
-                  <h3 className="mt-4 font-display text-[clamp(1.75rem,2.75vw,2.5rem)] font-medium leading-[1.04] tracking-[-0.028em] text-[rgba(22,18,16,0.97)]">
+                  <h3 className="portfolio-showcase-copy__title">
                     {project.title}
                   </h3>
-                  <div className="mt-5">
-                    <p className="m-0 font-sans text-[11px] font-medium leading-snug tracking-[0.06em] text-[rgba(42,34,26,0.48)]">
-                      Заказчик:
+                  <div className="portfolio-showcase-copy__meta">
+                    <p className="portfolio-showcase-copy__meta-label m-0">
+                      Заказчик
                     </p>
-                    <p className="mt-2 font-sans text-[1rem] font-bold leading-tight tracking-[0.04em] text-[rgba(24,20,18,0.94)]">
+                    <p className="portfolio-showcase-copy__meta-value m-0">
                       {project.client}
                     </p>
                   </div>
-                  <p className="mt-6 max-w-[620px] font-sans text-[clamp(0.97rem,1.05vw,1.08rem)] font-medium leading-[1.72] tracking-[-0.008em] text-[rgba(42,34,26,0.74)]">
+                  <p className="portfolio-showcase-copy__body">
                     {project.description}
                   </p>
-                  <div className="mt-7">
+                  <div className="portfolio-showcase-copy__cta">
                     <button
                       type="button"
                       onClick={openRequestForm ?? undefined}
-                      className="premium-cta-button premium-cta-button--primary inline-flex h-[52px] cursor-pointer items-center justify-center border-0 px-[28px] font-sans text-[12px] font-semibold uppercase tracking-[0.14em] outline-none focus-visible:ring-2 focus-visible:ring-neutral-900/20 focus-visible:ring-offset-2"
+                      className="portfolio-showcase-cta portfolio-showcase-cta--panel premium-cta-button premium-cta-button--secondary inline-flex w-full cursor-pointer items-center justify-center border-0 font-sans outline-none focus-visible:ring-2 focus-visible:ring-neutral-900/20 focus-visible:ring-offset-2 sm:w-auto"
                     >
                       <span className="premium-cta-button__label">
                         Оставить заявку
@@ -319,8 +347,9 @@ export function PortfolioSection() {
           </motion.div>
 
           {/* Bottom rail */}
-          <div className="portfolio-project-rail mt-8 shrink-0 border-t border-[rgba(74,58,38,0.08)] pt-6 lg:mt-10 lg:pt-8">
-            <div className="portfolio-showcase-rail -mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1 max-lg:px-1 lg:mx-0 lg:grid lg:snap-none lg:grid-cols-5 lg:gap-3 lg:overflow-visible">
+          <div className="portfolio-project-rail mt-10 shrink-0 pt-8 lg:mt-12 lg:pt-10">
+            <p className="portfolio-project-rail__label m-0">Все объекты</p>
+            <div className="portfolio-showcase-rail -mx-1 mt-4 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1 max-lg:px-1 lg:mx-0 lg:mt-5 lg:grid lg:snap-none lg:grid-cols-5 lg:gap-4 lg:overflow-visible">
               {projects.map((p, i) => {
                 const active = i === idx;
                 return (
@@ -329,27 +358,18 @@ export function PortfolioSection() {
                     type="button"
                     onClick={() => selectProject(i)}
                     className={[
-                      "snap-start scroll-ml-1",
-                      "flex min-h-[96px] min-w-[220px] flex-col justify-center gap-2 rounded-[20px] border px-4 py-3 text-left transition-[transform,background,border-color,box-shadow] duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] active:scale-[0.99] lg:min-h-[104px] lg:min-w-0 lg:max-h-[120px]",
-                      active
-                        ? "border-transparent bg-[rgba(30,24,18,0.92)] text-[rgba(248,244,238,0.94)] shadow-[0_20px_48px_rgba(28,22,18,0.18)]"
-                        : "border-[rgba(70,52,28,0.10)] bg-[rgba(255,255,255,0.38)] text-[rgba(28,24,20,0.88)] hover:border-[rgba(70,52,28,0.16)] hover:bg-[rgba(255,255,255,0.5)]",
+                      "portfolio-rail-card snap-start scroll-ml-1",
+                      active ? "portfolio-rail-card--active" : "",
                     ].join(" ")}
+                    aria-current={active ? "true" : undefined}
                   >
-                    <span
-                      className={[
-                        "line-clamp-1 font-sans text-[9px] font-semibold uppercase tracking-[0.18em]",
-                        active ? "text-[rgba(248,244,238,0.45)]" : "text-[rgba(118,94,72,0.75)]",
-                      ].join(" ")}
-                    >
+                    <span className="portfolio-rail-card__num tabular-nums">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span className="portfolio-rail-card__category line-clamp-1">
                       {p.category}
                     </span>
-                    <span
-                      className={[
-                        "line-clamp-2 font-display text-[13px] font-medium leading-snug tracking-[-0.015em] lg:text-[12.5px]",
-                        active ? "text-[rgba(248,244,238,0.92)]" : "text-[rgba(28,24,20,0.88)]",
-                      ].join(" ")}
-                    >
+                    <span className="portfolio-rail-card__title line-clamp-2">
                       {p.title}
                     </span>
                   </button>

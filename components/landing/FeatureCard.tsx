@@ -40,20 +40,7 @@ export function FeatureCard({ index, side, content }: Props) {
     >
       <article
         className={[
-          "w-full",
-          /* Premium glassmorphism */
-          "rounded-[24px]",
-          "border border-white/55",
-          "bg-white/45 backdrop-blur-2xl",
-          /*
-           * Shadow layers:
-           * 1. tight ambient (close, soft)
-           * 2. mid diffuse
-           * 3. far halo (premium depth)
-           * 4. inset top highlight (glass edge)
-           */
-          "shadow-[0_2px_12px_rgba(44,40,36,0.05),0_8px_36px_-6px_rgba(44,40,36,0.09),0_40px_80px_-20px_rgba(44,40,36,0.07),inset_0_1px_0_rgba(255,255,255,0.92)]",
-          /* Spacing */
+          "ds-panel ds-panel--feature w-full",
           "p-8 lg:p-9",
           /* Entrance animation */
           "transition-all duration-[1000ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
@@ -63,13 +50,13 @@ export function FeatureCard({ index, side, content }: Props) {
           articleAlign,
         ].join(" ")}
       >
-        <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.34em] text-ink/35">
+        <p className="ds-eyebrow text-[10px] tracking-[0.34em]">
           {String(index + 1).padStart(2, "0")} — раздел
         </p>
-        <h3 className="mt-5 font-display text-2xl font-medium leading-[1.08] tracking-tight text-ink sm:text-[1.65rem]">
+        <h3 className="ds-heading-display mt-5 text-2xl sm:text-[1.65rem]">
           {content.title}
         </h3>
-        <p className="mt-4 font-sans text-sm leading-[1.7] text-ink/60 sm:text-[0.9rem]">
+        <p className="ds-prose mt-4 text-sm sm:text-[0.9rem]">
           {content.body}
         </p>
       </article>

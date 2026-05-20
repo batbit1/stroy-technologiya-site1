@@ -236,7 +236,7 @@ export function ContactSection() {
 
 
 
-      <div className="contact-section-inner mx-auto max-w-[min(1240px,100%)] px-4 pb-px xs:px-5 sm:px-8 lg:px-14 xl:px-[4.35rem]">
+      <div className="contact-section-inner ds-container pb-px">
 
         <div className="contact-section-grid grid">
 
@@ -458,7 +458,7 @@ export function ContactSection() {
 
 
 
-      <div className="relative mx-auto mt-[clamp(3.25rem,6.5vw,5rem)] max-w-[min(1240px,100%)] border-t border-[rgba(105,82,58,0.085)] px-4 pt-[clamp(1.75rem,3.5vw,2.5rem)] xs:px-5 sm:px-8 lg:px-14 xl:px-[4.35rem]">
+      <div className="ds-container relative mt-[clamp(3.25rem,6.5vw,5rem)] border-t border-[rgba(105,82,58,0.085)] pt-[clamp(1.75rem,3.5vw,2.5rem)]">
 
         <div className="contact-section-legal-footer flex flex-col items-center gap-3 text-center sm:items-start sm:text-left">
 

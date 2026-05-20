@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Image from "next/image";
+import { BrandLogo } from "@/components/landing/BrandLogo";
 
 /** Телефон только в desktop header (контакты на странице — отдельно в siteContent). */
 const DESKTOP_HEADER_PHONE_DISPLAY = "+7 (353) 260-56-56";
@@ -47,22 +47,14 @@ export function SiteHeader({
 
   return (
     <header className="site-header">
-      <div className="site-header-inner mx-auto flex max-w-[1680px] items-center gap-3 pr-[clamp(14px,3.6vw,18px)] lg:grid lg:grid-cols-[1fr_auto_1fr] lg:items-center lg:gap-x-6 lg:pl-[clamp(20px,2vw,28px)] lg:pr-[clamp(24px,2.5vw,32px)]">
+      <div className="site-header-inner ds-container--wide mx-auto flex items-center gap-3 pr-[clamp(14px,3.6vw,18px)] lg:grid lg:grid-cols-[1fr_auto_1fr] lg:items-center lg:gap-x-6 lg:pl-[clamp(20px,2vw,28px)] lg:pr-[clamp(24px,2.5vw,32px)]">
         <button
           type="button"
           onClick={onGoHome}
           aria-label="СК Технология — главная"
           className="site-header-brand site-logo flex min-w-0 flex-none cursor-pointer items-center overflow-visible border-0 bg-transparent py-0 pr-0 outline-none focus-visible:ring-2 focus-visible:ring-neutral-900/20 focus-visible:ring-offset-2 lg:col-start-1 lg:row-start-1 lg:shrink-0 lg:justify-self-start"
         >
-          <Image
-            src="/logo-sk-technologiya.png"
-            alt=""
-            width={1600}
-            height={440}
-            className="site-header-brand-img"
-            priority
-            unoptimized
-          />
+          <BrandLogo className="site-header-brand-logo" />
         </button>
 
         <nav
@@ -98,7 +90,7 @@ export function SiteHeader({
           </div>
         </nav>
 
-        <div className="flex shrink-0 items-center gap-3 ml-auto lg:ml-0 lg:col-start-3 lg:row-start-1 lg:justify-self-end lg:gap-5">
+        <div className="site-header-actions flex shrink-0 items-center ml-auto lg:col-start-3 lg:row-start-1 lg:ml-0 lg:justify-self-end">
           <a
             href={DESKTOP_HEADER_PHONE_HREF}
             className="site-header-phone hidden lg:inline"
@@ -109,7 +101,7 @@ export function SiteHeader({
           <button
             type="button"
             onClick={onOpenRequestForm}
-            className="site-header-cta-desktop premium-cta-button premium-cta-button--primary premium-cta-button--header group/hp relative hidden h-11 cursor-pointer items-center justify-center border-0 px-5 font-sans outline-none ring-offset-2 ring-offset-[var(--paper-soft)] focus-visible:ring-2 focus-visible:ring-neutral-900/30 lg:flex"
+            className="site-header-cta premium-cta-button premium-cta-button--primary premium-cta-button--header relative hidden cursor-pointer items-center justify-center border-0 font-sans outline-none ring-offset-2 ring-offset-[var(--paper-soft)] focus-visible:ring-2 focus-visible:ring-neutral-900/30 lg:flex"
           >
             <span className="premium-cta-button__label">Оставить заявку</span>
           </button>

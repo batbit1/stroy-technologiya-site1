@@ -29,37 +29,19 @@ export type HeroContentProps = {
   instantMotion?: boolean;
 };
 
-/** Слева: локальный cinematic mist под колонкой текста; справа дом остаётся читаемым. */
-const HERO_SCRIM_LG = `
-  radial-gradient(
-    circle at 18% 42%,
-    rgba(248, 244, 238, 0.94) 0%,
-    rgba(248, 244, 238, 0.82) 28%,
-    rgba(248, 244, 238, 0.58) 48%,
-    rgba(248, 244, 238, 0.18) 72%,
-    rgba(248, 244, 238, 0) 100%
-  ),
-  linear-gradient(
-    to top,
-    rgba(38, 34, 29, 0.04) 0%,
-    transparent 42%
-  )
-`;
-
-/** Mobile: тот же принцип — сильнее под строкой заголовка, растворение вправо. */
+/** Mobile overlay scrim only (desktop — .hero-desktop-scrim в globals.css). */
 const HERO_SCRIM_MO = `
   radial-gradient(
-    circle at 14% 38%,
-    rgba(248, 244, 238, 0.9) 0%,
-    rgba(248, 244, 238, 0.72) 26%,
-    rgba(248, 244, 238, 0.46) 46%,
-    rgba(248, 244, 238, 0.14) 68%,
+    ellipse 88% 72% at 50% 44%,
+    rgba(248, 244, 238, 0.68) 0%,
+    rgba(248, 244, 238, 0.38) 34%,
+    rgba(248, 244, 238, 0.12) 62%,
     rgba(248, 244, 238, 0) 100%
   ),
   linear-gradient(
     to top,
-    rgba(38, 34, 29, 0.035) 0%,
-    transparent 38%
+    rgba(38, 34, 29, 0.02) 0%,
+    transparent 44%
   )
 `;
 
@@ -148,20 +130,22 @@ function HeroPremiumButton({
   onClick,
   children,
   fullWidthMobile,
+  className,
 }: {
   onClick: () => void;
   children: ReactNode;
   fullWidthMobile?: boolean;
+  className?: string;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       className={[
-        "premium-cta-button premium-cta-button--primary group/hp relative inline-flex h-[58px] cursor-pointer items-center justify-center border-0 px-[34px]",
-        "font-sans text-[13px] font-semibold uppercase tracking-[0.14em]",
+        "hero-mobile-cta-primary premium-cta-button premium-cta-button--primary group/hp relative inline-flex cursor-pointer items-center justify-center border-0",
         "outline-none ring-offset-2 ring-offset-[var(--paper-soft)] focus-visible:ring-2 focus-visible:ring-[rgba(41,37,32,0.14)]",
         fullWidthMobile ? "w-full sm:w-auto" : "",
+        className ?? "",
       ].join(" ")}
     >
       <span className="premium-cta-button__label">{children}</span>
@@ -222,28 +206,24 @@ function HeroDesktop({
 
   return (
     <motion.div
-      className="pointer-events-none absolute inset-0 z-[22] hidden min-h-0 flex-col lg:flex"
+      className="hero-desktop pointer-events-none absolute inset-0 z-[22] hidden min-h-0 flex-col lg:flex"
       initial={reduceFx ? SCENE_REVEAL_VISIBLE : SCENE_REVEAL_INITIAL}
       animate={SCENE_REVEAL_VISIBLE}
       transition={reduceFx ? SCENE_REVEAL_TRANSITION_REDUCED : SCENE_REVEAL_TRANSITION}
       style={{ willChange: "opacity, transform, filter" }}
     >
-      <div
-        aria-hidden
-        className="absolute inset-0"
-        style={{ background: HERO_SCRIM_LG }}
-      />
+      <div aria-hidden className="hero-desktop-scrim absolute inset-0" />
 
-      <div className="absolute inset-0 flex min-h-0 items-start justify-start">
-        <div className="relative w-full pl-[clamp(40px,6vw,120px)] pr-[clamp(20px,3vw,48px)] pt-[max(7.25rem,min(22svh,calc(env(safe-area-inset-top,0px)+19.5svh)))]">
-          <div className="hero-copy">
+      <div className="hero-desktop-stage absolute inset-0 flex min-h-0 items-start justify-start">
+        <div className="hero-desktop-column relative w-full">
+          <div className="hero-copy hero-copy--desktop ds-overlay-text-zone">
             <div className="hero-readability-glow" aria-hidden />
             <div className="hero-copy-eyebrow">
               <HeroCoverEyebrow
                 narrow={false}
                 reduceFx={reduceFx}
                 delay={0}
-                className="font-sans text-[0.72rem] font-bold uppercase leading-snug tracking-[0.24em] text-[rgba(23,23,23,0.46)]"
+                className="ds-eyebrow hero-eyebrow cinematic-text-render"
               />
             </div>
 
@@ -278,13 +258,19 @@ function HeroDesktop({
                 ease: EASE_PREMIUM,
                 delay: reduceFx ? 0 : 0.14,
               }}
-              className="hero-buttons"
+              className="hero-buttons hero-buttons--desktop"
               style={{ pointerEvents: "auto" }}
             >
-              <HeroPremiumButton onClick={onOpenRequestForm}>
+              <HeroPremiumButton
+                className="hero-cta-primary"
+                onClick={onOpenRequestForm}
+              >
                 {data.ctaPrimary}
               </HeroPremiumButton>
-              <HeroSecondaryLink onClick={onGoPortfolio}>
+              <HeroSecondaryLink
+                className="hero-cta-secondary"
+                onClick={onGoPortfolio}
+              >
                 {data.ctaSecondary}
               </HeroSecondaryLink>
             </motion.div>
@@ -326,8 +312,8 @@ function HeroMobile({
   );
 
   const columnClass = scrollFlowLayout
-    ? "relative z-[22] mx-auto flex w-full max-w-[calc(100vw-48px)] translate-x-[8px] flex-col items-center px-[22px] text-center pt-0"
-    : "relative mx-auto flex w-full max-w-[calc(100vw-32px)] flex-col px-1 xs:max-w-[min(22.5rem,calc(100vw-36px))] xs:px-2";
+    ? "hero-mobile-column hero-mobile-column--scroll relative z-[22] mx-auto flex w-full flex-col items-center text-center pt-0"
+    : "hero-mobile-column hero-mobile-column--overlay relative mx-auto flex w-full flex-col";
 
   const columnStyle = scrollFlowLayout
     ? undefined
@@ -340,7 +326,9 @@ function HeroMobile({
     <div
       className={[
         "hero-copy",
-        scrollFlowLayout ? "hero-copy--mobile-luxury-scroll mobile-luxury-mist-host" : "",
+        scrollFlowLayout
+          ? "hero-copy--mobile hero-copy--mobile-luxury-scroll mobile-luxury-mist-host"
+          : "hero-copy--mobile",
       ]
         .filter(Boolean)
         .join(" ")}
@@ -352,7 +340,7 @@ function HeroMobile({
           reduceFx={soft}
           delay={0}
           scrollFlowStatic={scrollFlowLayout}
-          className="font-sans text-[0.72rem] font-bold uppercase leading-snug tracking-[0.24em] text-[rgba(23,23,23,0.46)]"
+          className="hero-mobile-eyebrow ds-eyebrow cinematic-text-render"
         />
       </div>
 
@@ -363,7 +351,7 @@ function HeroMobile({
         reduceFx={soft}
         active
         delay={0.04}
-        className="premium-engraved-title hero-cinematic-title hero-title-measure cinematic-text-render font-display"
+        className="premium-engraved-title hero-cinematic-title hero-title-measure hero-mobile-title cinematic-text-render font-display"
       />
 
       {scrollFlowLayout ? (
