@@ -1,6 +1,7 @@
 /**
  * Единый chapter timeline: Hero = глава 0, далее STORY_STEPS[i].
  * Canvas progress01 (0…1) не меняется — маппинг только для overlay.
+ * Индекс кадра sequence: hero-hold + delayed start — `lib/sequence-frame-map.ts`.
  */
 
 /** Фазы внутри одной главы: 0–0.28 вход; 0.28–0.82 hold; 0.82–1.0 выход */

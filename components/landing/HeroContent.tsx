@@ -10,13 +10,13 @@ import { CinematicTitle, EASE_PREMIUM } from "./CinematicTitle";
 /** Фиксированная подпись hero: обычный текст без SplitType (иначе пропадают пробелы). */
 const HERO_COVER_EYEBROW = "ОРЕНБУРГ И ОБЛАСТЬ";
 
-const HERO_HEADLINE_LINES = ["Строим дома", "и объекты", "под ключ"] as const;
+const HERO_HEADLINE_LINES = ["Проектируем", "и строим", "современные дома"] as const;
 
 const MOBILE_HERO_TRUST_ITEMS = [
-  { id: "region", label: "Работаем в Оренбурге и области" },
-  { id: "terms", label: "Фиксируем стоимость и сроки" },
-  { id: "quality", label: "Контроль качества на каждом этапе" },
-  { id: "duty", label: "Берём ответственность на себя" },
+  { id: "region", label: "Архитектурное проектирование" },
+  { id: "terms", label: "Строительство домов под ключ" },
+  { id: "quality", label: "Инженерные системы" },
+  { id: "duty", label: "Контроль качества на площадке" },
 ] as const;
 
 function HeroTrustIcon({ id }: { id: (typeof MOBILE_HERO_TRUST_ITEMS)[number]["id"] }) {

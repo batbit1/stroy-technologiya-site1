@@ -2,10 +2,14 @@
 
 import { useCallback, useRef } from "react";
 import { ContactSection } from "@/components/landing/ContactSection";
+import { DesignPremiumSection } from "@/components/landing/DesignPremiumSection";
+import { HomeProjectsSection } from "@/components/landing/HomeProjectsSection";
 import { LandingScrollScene } from "@/components/landing/LandingScrollScene";
 import { NavScrollProvider } from "@/components/landing/NavScrollContext";
-import { PortfolioSection } from "@/components/landing/PortfolioSection";
+import { PopularProjectsSection } from "@/components/landing/PopularProjectsSection";
 import { SiteHeader } from "@/components/landing/SiteHeader";
+import { TurnkeySection } from "@/components/landing/TurnkeySection";
+import { WorkStagesSection } from "@/components/landing/WorkStagesSection";
 import { dispatchOpenContactRequestForm } from "@/lib/contact-form-events";
 
 export function LandingPageClient() {
@@ -68,6 +72,11 @@ export function LandingPageClient() {
             onOpenRequestForm={openRequestForm}
           />
 
+          <DesignPremiumSection />
+          <TurnkeySection />
+          <HomeProjectsSection />
+          <WorkStagesSection />
+
           <div
             ref={portfolioAnchorRef}
             data-nav-anchor="portfolio"
@@ -79,7 +88,7 @@ export function LandingPageClient() {
             }}
           />
 
-          <PortfolioSection />
+          <PopularProjectsSection />
 
           <div
             ref={contactsAnchorRef}

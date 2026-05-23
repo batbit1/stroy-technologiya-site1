@@ -21,6 +21,16 @@ export function SiteHeader({
   onOpenRequestForm,
 }: SiteHeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => {
+      setIsScrolled(window.scrollY > 28);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => {
     if (!isMobileMenuOpen) return;
@@ -81,12 +91,19 @@ export function SiteHeader({
   }, []);
 
   return (
-    <header className="site-header site-header--mobile-in-hero">
+    <header
+      className={[
+        "site-header site-header--mobile-in-hero site-header--cinematic-glass",
+        isScrolled ? "site-header--scrolled" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
       <div className="site-header-inner ds-container--wide mx-auto flex items-center gap-3 pr-[clamp(14px,3.6vw,18px)] lg:grid lg:grid-cols-[1fr_auto_1fr] lg:items-center lg:gap-x-6 lg:pl-[clamp(20px,2vw,28px)] lg:pr-[clamp(24px,2.5vw,32px)]">
         <button
           type="button"
           onClick={onGoHome}
-          aria-label="СК Технология — главная"
+          aria-label="СК-Технология — главная"
           className="site-header-brand site-logo flex min-w-0 flex-none cursor-pointer items-center overflow-visible border-0 bg-transparent py-0 pr-0 outline-none focus-visible:ring-2 focus-visible:ring-neutral-900/20 focus-visible:ring-offset-2 lg:col-start-1 lg:row-start-1 lg:shrink-0 lg:justify-self-start"
         >
           <BrandLogo className="site-header-brand-logo site-header-brand-logo--luxury" />

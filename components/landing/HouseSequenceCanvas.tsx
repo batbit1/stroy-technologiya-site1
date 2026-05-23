@@ -8,6 +8,10 @@ import {
   useRef,
   useSyncExternalStore,
 } from "react";
+import {
+  resolveMobileKeyframeLogicalIndex as resolveMobileKeyframeLogicalIndexMapped,
+  resolveSequenceFrameIndex as resolveSequenceFrameIndexMapped,
+} from "@/lib/sequence-frame-map";
 
 const MOBILE_MQ = "(max-width: 767px)";
 /** Совпадает с `lg:hidden` ленты mobile cinematic (Tailwind lg = 1024px). */
@@ -60,10 +64,15 @@ function clampFrameIndex(index: number, total: number): number {
 }
 
 /** Логический индекс ключевого кадра mobile cinematic [0 .. MOBILE_KEYFRAME_COUNT-1]. */
-function resolveMobileKeyframeLogicalIndex(progress01: number): number {
-  const k = MOBILE_KEYFRAME_COUNT;
-  if (k <= 1) return 0;
-  return Math.min(k - 1, Math.floor(clamp01(progress01) * k));
+function resolveMobileKeyframeLogicalIndex(
+  progress01: number,
+  mobileFrameCount: number,
+): number {
+  return resolveMobileKeyframeLogicalIndexMapped(
+    progress01,
+    MOBILE_KEYFRAME_COUNT,
+    mobileFrameCount,
+  );
 }
 
 /** Индекс файла в `/sequence/new-house/mobile` для ключевого кадра. */
@@ -135,8 +144,7 @@ function prependEarlyLogicalFrames(order: readonly number[], total: number): num
 
 /**
  * Выбор кадра для desktop sequence и mobile subsampled map (вне режима keyframes cinematic).
- * Видимый mobile cinematic (&lt;lg) с `mobileKeyframeMode` обрабатывается отдельно
- * через `resolveMobileKeyframeLogicalIndex` + `resolveMobileKeyframePhysicalIndex`.
+ * Hero-hold + delayed start — `lib/sequence-frame-map.ts`.
  */
 function resolveSequenceFrameIndex(
   progress01: number,
@@ -144,14 +152,12 @@ function resolveSequenceFrameIndex(
   reducedMotion: boolean,
   useFloorSoftMobile: boolean,
 ): number {
-  const total = Math.max(1, totalFrames);
-  if (reducedMotion) return total - 1;
-  if (total <= 1) return 0;
-  const scaled = clamp01(progress01) * (total - 1);
-  if (useFloorSoftMobile) {
-    return clampFrameIndex(Math.floor(scaled), total);
-  }
-  return clampFrameIndex(Math.round(scaled), total);
+  return resolveSequenceFrameIndexMapped(
+    progress01,
+    totalFrames,
+    reducedMotion,
+    useFloorSoftMobile,
+  );
 }
 
 function frameFileName(frameIndexZeroBased: number): string {
@@ -431,7 +437,7 @@ export function HouseSequenceCanvas({
     mobileKeyframeMode && reducedMotion
       ? MOBILE_KEYFRAME_COUNT - 1
       : mobileKeyframeMode
-        ? resolveMobileKeyframeLogicalIndex(progress01)
+        ? resolveMobileKeyframeLogicalIndex(progress01, mobileFrames)
         : resolveSequenceFrameIndex(
             progress01,
             totalLive,
@@ -570,7 +576,7 @@ export function HouseSequenceCanvas({
     if (mobileKfDraw) {
       targetIdx = reducedMotionRef.current
         ? MOBILE_KEYFRAME_COUNT - 1
-        : resolveMobileKeyframeLogicalIndex(progDraw);
+        : resolveMobileKeyframeLogicalIndex(progDraw, mobileFramesRef.current);
     } else {
       const blendFloor =
         scrollBlendActiveRef.current && !reducedMotionRef.current;

@@ -77,7 +77,7 @@ for (const marker of cutMarkers) {
 
 let out = policyLines.join("\n\n");
 out = out.replace(/27\.07\.2006\.\s*№/g, "27.07.2006 №");
-out = out.replace(/ООО "СТРОЙТЕХНОЛОГИЯ"/g, "ООО «СТРОЙТЕХНОЛОГИЯ»");
+out = out.replace(/ООО "СК-ТЕХНОЛОГИЯ"/g, "ООО «СК-ТЕХНОЛОГИЯ»");
 const outPath = path.join(__dirname, "policy-extracted.txt");
 fs.writeFileSync(outPath, out, "utf8");
 console.log("Wrote", outPath, "chars", out.length, "lines", policyLines.length);

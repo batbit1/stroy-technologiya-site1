@@ -38,6 +38,7 @@ function accessibilityTitle(t: string) {
 export type CinematicTitleProps = {
   text: string;
   className?: string;
+  id?: string;
   delay?: number;
   once?: boolean;
   active?: boolean;
@@ -51,6 +52,7 @@ export function CinematicTitle(props: CinematicTitleProps) {
   const {
     text,
     className = "",
+    id,
     delay = 0,
     active = true,
     narrow = false,
@@ -208,6 +210,7 @@ export function CinematicTitle(props: CinematicTitleProps) {
     const StaticTag = as === "h1" ? "h1" : as === "h2" ? "h2" : "h3";
     return (
       <StaticTag
+        id={id}
         className={`cinematic-text-render premium-engraved-title cinematic-title-static pointer-events-none m-0 max-w-none text-left antialiased ${className}`}
       >
         {reduceFxChunks.map((chunk, mi) => (
@@ -224,6 +227,7 @@ export function CinematicTitle(props: CinematicTitleProps) {
 
   return (
     <MotionHeading
+      id={id}
       className={`pointer-events-none m-0 w-full max-w-none text-left ${className}`}
     >
       <span className="sr-only">{srText}</span>

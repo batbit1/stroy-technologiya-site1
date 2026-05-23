@@ -115,6 +115,60 @@ function scrollMobileToScene(sceneKey: string) {
   window.scrollTo({ top, behavior: "auto" });
 }
 
+function ContactMetaIcon({ kind }: { kind: "pin" | "clock" | "phone" }) {
+  const paths = {
+    pin: (
+      <path
+        d="M8 1.5a4 4 0 0 1 4 4c0 2.8-4 8.5-4 8.5S4 8.3 4 5.5a4 4 0 0 1 4-4Z"
+        stroke="currentColor"
+        strokeWidth="1.2"
+      />
+    ),
+    clock: (
+      <>
+        <circle cx="8" cy="8" r="5.5" stroke="currentColor" strokeWidth="1.2" />
+        <path
+          d="M8 5v3.2l2 1.2"
+          stroke="currentColor"
+          strokeWidth="1.2"
+          strokeLinecap="square"
+        />
+      </>
+    ),
+    phone: (
+      <path
+        d="M5.2 2.8c.4 2.1 2.3 4 4.4 4.4l1.2-1.2a1 1 0 0 1 1-.2c1 .4 2.1.9 3 1.6a1 1 0 0 1 .3 1.1l-.9 2a1 1 0 0 1-.9.6c-1.6.2-4.6-2.8-4.8-4.4a1 1 0 0 1 .6-.9l2-.9a1 1 0 0 1 1.1.3c.7.9 1.2 2 1.6 3a1 1 0 0 1-.2 1L5.2 2.8Z"
+        stroke="currentColor"
+        strokeWidth="1.1"
+        strokeLinejoin="round"
+      />
+    ),
+  };
+  return (
+    <span className="contact-section-meta__icon" aria-hidden>
+      <svg viewBox="0 0 16 16" width="18" height="18" fill="none">
+        {paths[kind]}
+      </svg>
+    </span>
+  );
+}
+
+function ContactMapPin() {
+  return (
+    <span className="contact-map-pin" aria-hidden>
+      <svg viewBox="0 0 32 44" width="36" height="50" fill="none">
+        <path
+          d="M16 1.5c7.18 0 13 5.82 13 13 0 9.75-13 28.5-13 28.5S3 24.25 3 14.5c0-7.18 5.82-13 13-13Z"
+          fill="#caa15f"
+          stroke="rgba(255,248,236,0.35)"
+          strokeWidth="1"
+        />
+        <circle cx="16" cy="14.5" r="4.5" fill="rgba(12,10,8,0.88)" />
+      </svg>
+    </span>
+  );
+}
+
 function ContactFooterIcon({ kind }: { kind: "pin" | "clock" | "mail" | "phone" }) {
   const paths = {
     pin: (
@@ -312,7 +366,7 @@ export function ContactSection() {
 
 
 
-      <div className="contact-section-inner ds-container pb-px">
+      <div className="contact-section-inner contact-section-inner--cinematic ds-container pb-px">
 
         <div className="contact-section-grid grid">
 
@@ -320,21 +374,29 @@ export function ContactSection() {
 
             ref={leftRef}
 
-            inert={!leftIn ? true : undefined}
+            inert={!leftIn && !isMobileContactLayout ? true : undefined}
 
-            className="contact-section-col-left contact-section-col-left--desktop min-w-0 max-lg:hidden"
+            className="contact-section-col-left min-w-0"
 
-            style={{
+            style={
 
-              opacity: leftIn ? 1 : 0,
+              isMobileContactLayout
 
-              transform: leftIn ? "translateY(0)" : "translateY(20px)",
+                ? undefined
 
-              transition: `opacity ${SHOW_MS}ms ${EASE_LUX}, transform ${SHOW_MS}ms ${EASE_LUX}`,
+                : {
 
-              pointerEvents: leftIn ? "auto" : "none",
+                    opacity: leftIn ? 1 : 0,
 
-            }}
+                    transform: leftIn ? "translateY(0)" : "translateY(20px)",
+
+                    transition: `opacity ${SHOW_MS}ms ${EASE_LUX}, transform ${SHOW_MS}ms ${EASE_LUX}`,
+
+                    pointerEvents: leftIn ? "auto" : "none",
+
+                  }
+
+            }
 
           >
 
@@ -356,21 +418,25 @@ export function ContactSection() {
 
               <p className="contact-section-lede">{CONTACT_DESCRIPTION}</p>
 
+              <ul className="contact-section-meta-list">
 
+                <li className="contact-section-meta-row">
 
-              <p className="contact-section-meta contact-section-meta--address">
+                  <ContactMetaIcon kind="pin" />
 
-                {CONTACT_ADDRESS}
+                  <span>{CONTACT_ADDRESS}</span>
 
-              </p>
+                </li>
 
-              <p className="contact-section-meta contact-section-meta--schedule">
+                <li className="contact-section-meta-row">
 
-                {CONTACT_SCHEDULE}
+                  <ContactMetaIcon kind="clock" />
 
-              </p>
+                  <span>{CONTACT_SCHEDULE}</span>
 
+                </li>
 
+              </ul>
 
               <div className="contact-section-actions">
 
@@ -380,7 +446,7 @@ export function ContactSection() {
 
                     type="button"
 
-                    className="premium-cta-button premium-cta-button--secondary contact-section-btn-call"
+                    className="contact-section-btn contact-section-btn-call"
 
                     aria-expanded={phoneModalOpen}
 
@@ -392,25 +458,29 @@ export function ContactSection() {
 
                   >
 
-                    <span className="premium-cta-button__label">Позвонить</span>
+                    <span className="contact-section-btn__label">
+
+                      <ContactMetaIcon kind="phone" />
+
+                      Позвонить
+
+                    </span>
 
                   </button>
 
                 </div>
 
-
-
                 <button
 
                   type="button"
 
-                  className="premium-cta-button premium-cta-button--primary contact-section-btn-request"
+                  className="contact-section-btn contact-section-btn-request"
 
                   onClick={() => setFormModalOpen(true)}
 
                 >
 
-                  <span className="premium-cta-button__label">
+                  <span className="contact-section-btn__label contact-section-btn__label--arrow">
 
                     Оставить заявку
 
@@ -458,15 +528,7 @@ export function ContactSection() {
 
             <div className="contact-map-card w-full min-w-0">
 
-              <div className="contact-map-card__frame-wrap">
-
-              <div
-
-                className="contact-map-frame relative h-[320px] w-full overflow-hidden lg:h-auto lg:min-h-0 lg:flex-1"
-
-                style={{ aspectRatio: "auto", minHeight: 0 }}
-
-              >
+              <div className="contact-map-frame">
 
                 <iframe
 
@@ -478,7 +540,7 @@ export function ContactSection() {
 
                   height="100%"
 
-                  className="absolute inset-0 block h-full w-full border-0"
+                  className="contact-map-iframe"
 
                   frameBorder={0}
 
@@ -490,6 +552,12 @@ export function ContactSection() {
 
                 />
 
+                <div className="contact-map-overlay" aria-hidden />
+
+                <ContactMapPin />
+
+                <p className="contact-map-chip">{CONTACT_ADDRESS}</p>
+
                 <a
 
                   href={YANDEX_ROUTE_HREF}
@@ -498,25 +566,13 @@ export function ContactSection() {
 
                   rel="noreferrer"
 
-                  className="premium-cta-button premium-cta-button--primary pointer-events-auto absolute bottom-3 right-3 z-10 max-w-[calc(100%-1.5rem)] shadow-[0_12px_40px_rgba(32,24,18,0.22)]"
+                  className="contact-map-route-link"
 
                 >
 
-                  <span className="premium-cta-button__label">
-
-                    Открыть маршрут
-
-                  </span>
+                  Маршрут
 
                 </a>
-
-              </div>
-
-              </div>
-
-              <div className="contact-map-footer">
-
-                <p className="contact-map-address">{CONTACT_ADDRESS}</p>
 
               </div>
 
@@ -600,7 +656,7 @@ export function ContactSection() {
 
           <div className="contact-mobile-footer-glass__legal">
             <p className="contact-mobile-footer__copyright m-0">
-              © 2025 СТРОЙ ТЕХНОЛОГИЯ
+              © 2025 СК ТЕХНОЛОГИЯ
             </p>
             <button
               type="button"
@@ -616,31 +672,23 @@ export function ContactSection() {
 
 
 
-      <div className="contact-section-legal-footer contact-section-legal-footer--desktop ds-container relative mt-[clamp(3.25rem,6.5vw,5rem)] border-t border-[rgba(105,82,58,0.085)] pt-[clamp(1.75rem,3.5vw,2.5rem)] max-lg:hidden">
+      <div className="contact-section-legal-footer contact-section-legal-footer--desktop ds-container contact-section-inner--cinematic max-lg:hidden">
 
-        <div className="flex flex-col items-center gap-3 text-center sm:items-start sm:text-left">
+        <p className="contact-section-legal-copy m-0">© СК ТЕХНОЛОГИЯ</p>
 
-          <p className="contact-section-legal-copy m-0 font-sans text-[0.98rem] font-semibold tracking-[0.04em] text-ink/[0.82]">
+        <button
 
-            © СТРОЙ ТЕХНОЛОГИЯ
+          type="button"
 
-          </p>
+          className="contact-section-policy-trigger"
 
-          <button
+          onClick={() => setPolicyModalOpen(true)}
 
-            type="button"
+        >
 
-            className="contact-section-policy-trigger"
+          Политика компании
 
-            onClick={() => setPolicyModalOpen(true)}
-
-          >
-
-            Политика компании
-
-          </button>
-
-        </div>
+        </button>
 
       </div>
 
