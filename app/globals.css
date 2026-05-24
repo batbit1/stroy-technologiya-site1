@@ -9827,6 +9827,11 @@ body.mobile-past-hero .site-header.site-header--mobile-in-hero {
   color: rgba(255, 255, 255, 0.78);
 }
 
+.contact-section-meta-row a {
+  color: inherit;
+  text-decoration: none;
+}
+
 .contact-section-meta__icon {
   display: inline-flex;
   flex-shrink: 0;
@@ -10116,8 +10121,8 @@ body.mobile-past-hero .site-header.site-header--mobile-in-hero {
 .contact-map-pin {
   position: absolute;
   z-index: 4;
-  left: 58%;
-  top: 46%;
+  left: 50%;
+  top: 50%;
   transform: translate(-50%, -100%);
   pointer-events: none;
   filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.45));

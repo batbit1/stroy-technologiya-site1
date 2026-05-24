@@ -20,6 +20,14 @@ import {
 
 } from "@/lib/motion-system";
 
+import {
+  SITE_ADDRESS,
+  SITE_EMAIL,
+  SITE_EMAIL_HREF,
+  SITE_PHONE_OPTIONS,
+  SITE_YANDEX_MAP_IFRAME_SRC,
+  SITE_YANDEX_ROUTE_HREF,
+} from "@/data/siteContacts";
 import { useInViewOnce } from "@/hooks/useInViewOnce";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 
@@ -39,51 +47,7 @@ const CONTACT_DESCRIPTION =
 
   "Оставьте заявку или позвоните — подскажем оптимальный формат работ и подготовим предварительный расчёт.";
 
-const CONTACT_ADDRESS = "Оренбург, Просторная, 19";
-
 const CONTACT_SCHEDULE = "Пн–Пт · 09:00–18:00";
-
-
-
-/** Яндекс.Карты: офис (lat, lon). */
-
-const MAP_LAT = 51.837881;
-
-const MAP_LON = 55.157681;
-
-const YANDEX_MAP_IFRAME_SRC = `https://yandex.ru/map-widget/v1/?ll=${encodeURIComponent(`${MAP_LON},${MAP_LAT}`)}&z=16&pt=${MAP_LON},${MAP_LAT},pm2rdm`;
-
-const YANDEX_ROUTE_HREF = `https://yandex.ru/maps/?rtext=~${MAP_LAT},${MAP_LON}`;
-
-
-
-const PHONE_OPTIONS = [
-
-  {
-
-    label: "Мобильный",
-
-    display: "+7 (961) 944-00-00",
-
-    href: "tel:+79619440000",
-
-  },
-
-  {
-
-    label: "Офис",
-
-    display: "+7 (353) 260-56-56",
-
-    href: "tel:+73532605656",
-
-  },
-
-] as const;
-
-const CONTACT_EMAIL = "info@stroytech56.ru";
-
-const CONTACT_EMAIL_HREF = "mailto:info@stroytech56.ru";
 
 const MOBILE_FOOTER_NAV = [
   { label: "О компании", sceneKey: "about" },
@@ -115,7 +79,7 @@ function scrollMobileToScene(sceneKey: string) {
   window.scrollTo({ top, behavior: "auto" });
 }
 
-function ContactMetaIcon({ kind }: { kind: "pin" | "clock" | "phone" }) {
+function ContactMetaIcon({ kind }: { kind: "pin" | "clock" | "mail" | "phone" }) {
   const paths = {
     pin: (
       <path
@@ -134,6 +98,14 @@ function ContactMetaIcon({ kind }: { kind: "pin" | "clock" | "phone" }) {
           strokeLinecap="square"
         />
       </>
+    ),
+    mail: (
+      <path
+        d="M2.5 4.5h11L8 9 2.5 4.5Zm0 0 5.5 4.5L13.5 4.5"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinejoin="round"
+      />
     ),
     phone: (
       <path
@@ -424,7 +396,7 @@ export function ContactSection() {
 
                   <ContactMetaIcon kind="pin" />
 
-                  <span>{CONTACT_ADDRESS}</span>
+                  <span>{SITE_ADDRESS}</span>
 
                 </li>
 
@@ -433,6 +405,14 @@ export function ContactSection() {
                   <ContactMetaIcon kind="clock" />
 
                   <span>{CONTACT_SCHEDULE}</span>
+
+                </li>
+
+                <li className="contact-section-meta-row">
+
+                  <ContactMetaIcon kind="mail" />
+
+                  <a href={SITE_EMAIL_HREF}>{SITE_EMAIL}</a>
 
                 </li>
 
@@ -532,7 +512,7 @@ export function ContactSection() {
 
                 <iframe
 
-                  src={YANDEX_MAP_IFRAME_SRC}
+                  src={SITE_YANDEX_MAP_IFRAME_SRC}
 
                   title="Офис компании на Яндекс.Картах"
 
@@ -556,11 +536,11 @@ export function ContactSection() {
 
                 <ContactMapPin />
 
-                <p className="contact-map-chip">{CONTACT_ADDRESS}</p>
+                <p className="contact-map-chip">{SITE_ADDRESS}</p>
 
                 <a
 
-                  href={YANDEX_ROUTE_HREF}
+                  href={SITE_YANDEX_ROUTE_HREF}
 
                   target="_blank"
 
@@ -612,7 +592,7 @@ export function ContactSection() {
               <ul className="contact-mobile-footer__contact-list">
                 <li className="contact-mobile-footer__contact-row">
                   <ContactFooterIcon kind="pin" />
-                  <span>{CONTACT_ADDRESS}</span>
+                  <span>{SITE_ADDRESS}</span>
                 </li>
                 <li className="contact-mobile-footer__contact-row">
                   <ContactFooterIcon kind="clock" />
@@ -620,8 +600,8 @@ export function ContactSection() {
                 </li>
                 <li className="contact-mobile-footer__contact-row">
                   <ContactFooterIcon kind="mail" />
-                  <a href={CONTACT_EMAIL_HREF} className="contact-mobile-footer__text-link">
-                    {CONTACT_EMAIL}
+                  <a href={SITE_EMAIL_HREF} className="contact-mobile-footer__text-link">
+                    {SITE_EMAIL}
                   </a>
                 </li>
               </ul>
@@ -637,10 +617,10 @@ export function ContactSection() {
             <div className="contact-mobile-footer__col contact-mobile-footer__col--call">
               <p className="contact-mobile-footer__label">Позвоните нам</p>
               <a
-                href={PHONE_OPTIONS[1].href}
+                href={SITE_PHONE_OPTIONS[0].href}
                 className="contact-mobile-footer__phone"
               >
-                {PHONE_OPTIONS[1].display}
+                {SITE_PHONE_OPTIONS[0].display}
               </a>
               <button
                 type="button"
@@ -727,7 +707,7 @@ export function ContactSection() {
                 </div>
                 <div className="contact-phone-modal-body">
                   <ul className="contact-phone-choice-list">
-                    {PHONE_OPTIONS.map((row) => (
+                    {SITE_PHONE_OPTIONS.map((row) => (
                       <li key={row.href} className="contact-phone-choice-item">
                         <a
                           href={row.href}

@@ -656,12 +656,12 @@ export const SITE_CONTENT: SiteContent = {
     heading: "Обсудим ваш будущий дом",
     subheading:
       "Расскажите, какой дом вы хотите построить. Мы уточним задачу, участок, формат работ и предложим следующий шаг.",
-    phone: "+7 (353) 000-00-00",
+    phone: "+7 (961) 944-00-00",
     messengerLabel: "WhatsApp или Telegram — как удобнее",
-    messengerHref: "https://wa.me/79008000001",
-    email: "info@stroytech56.ru",
+    messengerHref: "https://wa.me/79619440000",
+    email: "skt-remont56@mail.ru",
     locality: "Оренбург и Оренбургская область",
-    address: "Офис: Оренбург, ул. Пример, 1",
+    address: "г. Оренбург, ул. Автомобилистов 37/1",
     workingHours: "Будни · 10:00–18:00 по предварительной записи",
     ctaLabel: "Получить консультацию",
     trustNote:

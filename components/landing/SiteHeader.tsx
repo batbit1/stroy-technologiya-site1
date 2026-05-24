@@ -2,10 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { BrandLogo } from "@/components/landing/BrandLogo";
-
-/** Телефон только в desktop header (контакты на странице — отдельно в siteContent). */
-const DESKTOP_HEADER_PHONE_DISPLAY = "+7 (353) 260-56-56";
-const DESKTOP_HEADER_PHONE_HREF = "tel:+73532605656";
+import { SITE_PHONE_DISPLAY, SITE_PHONE_HREF } from "@/data/siteContacts";
 
 export type SiteHeaderProps = {
   onGoHome: () => void;
@@ -144,11 +141,11 @@ export function SiteHeader({
 
         <div className="site-header-actions flex shrink-0 items-center ml-auto lg:col-start-3 lg:row-start-1 lg:ml-0 lg:justify-self-end">
           <a
-            href={DESKTOP_HEADER_PHONE_HREF}
+            href={SITE_PHONE_HREF}
             className="site-header-phone hidden lg:inline"
-            aria-label={`Позвонить: ${DESKTOP_HEADER_PHONE_DISPLAY}`}
+            aria-label={`Позвонить: ${SITE_PHONE_DISPLAY}`}
           >
-            {DESKTOP_HEADER_PHONE_DISPLAY}
+            {SITE_PHONE_DISPLAY}
           </a>
           <button
             type="button"

@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { SiteContactJsonLd } from "@/components/SiteContactJsonLd";
 import { SITE_CONTENT } from "@/data/siteContent";
 import "./globals.css";
 
@@ -46,7 +47,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru" className="h-full antialiased">
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        <SiteContactJsonLd />
+        {children}
+      </body>
     </html>
   );
 }
