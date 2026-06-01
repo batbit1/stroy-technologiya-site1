@@ -1,3 +1,9 @@
+/**
+ * Справочная копия бывшего app/api/send-telegram/route.ts (Next.js API).
+ * Для статического экспорта (output: "export") API routes не собираются.
+ * Логика перенесена в hosting/send.php.example для PHP-хостинга.
+ */
+
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {

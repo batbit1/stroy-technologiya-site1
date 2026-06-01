@@ -1,0 +1,74 @@
+<?php
+/**
+ * Пример endpoint для статического сайта из out/.
+ * Скопируйте как send.php рядом с index.html на хостинге.
+ *
+ * Ожидает POST JSON: { name, phone, projectType, comment }
+ * Ответ: { "ok": true } или { "error": "..." }
+ */
+
+header('Content-Type: application/json; charset=utf-8');
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['error' => 'Method not allowed']);
+    exit;
+}
+
+$raw = file_get_contents('php://input');
+$body = json_decode($raw, true);
+
+if (!is_array($body)) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Invalid JSON']);
+    exit;
+}
+
+$name = trim((string) ($body['name'] ?? ''));
+$phone = trim((string) ($body['phone'] ?? ''));
+$projectType = trim((string) ($body['projectType'] ?? ''));
+$comment = trim((string) ($body['comment'] ?? ''));
+
+$token = getenv('TELEGRAM_BOT_TOKEN');
+$chatId = getenv('TELEGRAM_CHAT_ID');
+
+if (!$token || !$chatId) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Telegram env variables are missing']);
+    exit;
+}
+
+$text = implode("\n", [
+    '📩 Новая заявка с сайта',
+    '',
+    '👤 Имя: ' . ($name !== '' ? $name : 'Не указано'),
+    '📞 Телефон: ' . ($phone !== '' ? $phone : 'Не указано'),
+    '🏗 Тип объекта: ' . ($projectType !== '' ? $projectType : 'Не указано'),
+    '💬 Комментарий: ' . ($comment !== '' ? $comment : 'Не указано'),
+]);
+
+$payload = json_encode([
+    'chat_id' => $chatId,
+    'text' => $text,
+]);
+
+$ch = curl_init("https://api.telegram.org/bot{$token}/sendMessage");
+curl_setopt_array($ch, [
+    CURLOPT_POST => true,
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+    CURLOPT_POSTFIELDS => $payload,
+    CURLOPT_TIMEOUT => 20,
+]);
+
+$response = curl_exec($ch);
+$httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+curl_close($ch);
+
+if ($response === false || $httpCode < 200 || $httpCode >= 300) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Telegram send failed']);
+    exit;
+}
+
+echo json_encode(['ok' => true]);

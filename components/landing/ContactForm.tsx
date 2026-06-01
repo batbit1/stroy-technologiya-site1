@@ -8,6 +8,8 @@ import {
   type KeyboardEvent,
 } from "react";
 
+import { CONTACT_FORM_SUBMIT_URL } from "@/lib/contact-form-endpoint";
+
 const PHONE_PREFIX = "+7 ";
 
 const TASK_TYPE_LABELS: Record<string, string> = {
@@ -121,10 +123,11 @@ export function ContactForm({
       setIsSubmitting(true);
 
       try {
-        const response = await fetch("/api/send-telegram", {
+        const response = await fetch(CONTACT_FORM_SUBMIT_URL, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Accept: "application/json",
           },
           body: JSON.stringify({
             name,
